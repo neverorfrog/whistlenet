@@ -1,0 +1,10 @@
+seed: 3
+
+function: Constant
+min: -4
+max : 4
+samples: 200
+gauss_sigma: 1
+gauss_mean: 0
+
+N: 100
