@@ -1,74 +1,143 @@
-#include <iostream>
 #include "AudioRecorder.h"
+#include <iostream>
 
-const std::string deviceName = "pipewire";
-constexpr int channels = 1;
-constexpr int sampleRate = 44100;
-constexpr float latency = 0.1f;
-
-using std::cout, std::cin, std::endl;
-
+using std::cout, std::endl;
 
 AudioRecorder::AudioRecorder() {
     // Initialize PortAudio
     PaError err;
     err = Pa_Initialize();
     AudioRecorder::checkErr(err);
-    inputParameters.device = 3; //Pa_GetDefaultInputDevice();
-    // if (!deviceName.empty()){ // get device by name
-    //     for (PaDeviceIndex i = 0; i < Pa_GetDeviceCount(); ++i){
-    //       cout << "Device: " << Pa_GetDeviceInfo(i)->name << endl;
-    //       if (std::string(Pa_GetDeviceInfo(i)->name) == deviceName){
-    //           cout << "Using input device: " << deviceName << endl;
-    //           inputParameters.device = i;
-    //           // break;
-    //       }
-    //     }
-    // }
 
-    // Initializing parameters
+    // Checking number of devices
+    int numDevices = Pa_GetDeviceCount();
+    printf("Number of devices: %d\n", numDevices);
+    if (numDevices < 0) {
+        printf("Error getting device count.\n");
+        exit(EXIT_FAILURE);
+    } else if (numDevices == 0) {
+        printf("There are no available audio devices on this machine.\n");
+        exit(EXIT_SUCCESS);
+    }
+
+    const PaDeviceInfo* deviceInfo;
+    for (int i = 0; i < numDevices; i++) {
+        deviceInfo = Pa_GetDeviceInfo(i);
+        printf("Device %d:\n", i);
+        printf("  name: %s\n", deviceInfo->name);
+        printf("  maxInputChannels: %d\n", deviceInfo->maxInputChannels);
+        printf("  maxOutputChannels: %d\n", deviceInfo->maxOutputChannels);
+        printf("  defaultSampleRate: %f\n", deviceInfo->defaultSampleRate);
+    }
+
+    int device = Pa_GetDefaultInputDevice();
+    inputParameters.device = device;
     const PaDeviceInfo* info = Pa_GetDeviceInfo(inputParameters.device);
-    inputParameters.channelCount = std::min(static_cast<int>(channels), info->maxInputChannels);
+    cout << "Using input device: " << info->name << endl;
+    inputParameters.channelCount = 2;
     inputParameters.sampleFormat = paFloat32;
-    inputParameters.suggestedLatency = latency;
     inputParameters.hostApiSpecificStreamInfo = nullptr;
+    inputParameters.suggestedLatency = info->defaultLowInputLatency;
+    double sampleRate = info->defaultSampleRate;
 
-    err = Pa_OpenStream(&stream, &inputParameters, nullptr, sampleRate, paFramesPerBufferUnspecified, 0, nullptr, nullptr);
+    err = Pa_OpenStream(
+        &stream,
+        &inputParameters,
+        nullptr,
+        sampleRate,
+        paFramesPerBufferUnspecified, //TODO: change to FRAMES_PER_BUFFER?
+        paNoFlag,
+        AudioRecorder::callback,
+        nullptr
+    );
     checkErr(err);
 }
 
-AudioRecorder::~AudioRecorder()
-{
-  if (stream)
-  {
-    if (Pa_IsStreamActive(stream))
-      Pa_StopStream(stream);
+AudioRecorder::~AudioRecorder() {
+    PaError err;
+    if (stream) {
+        if (Pa_IsStreamActive(stream))
+        err = Pa_StopStream(stream);
 
-    Pa_CloseStream(stream);
-    stream = nullptr;
-  }
+        err = Pa_CloseStream(stream);
+        stream = nullptr;
+    }
 
-  Pa_Terminate();
+    err = Pa_Terminate();
+    checkErr(err);
 }
+
+void AudioRecorder::record(AudioData& audioData) {
+
+    audioData.isValid = false;
+    audioData.samples.clear();
+    PaError err;
+
+    // Start stream and fill audiodata just once
+    if (Pa_IsStreamStopped(stream)) {
+        const PaDeviceInfo* deviceInfo = Pa_GetDeviceInfo(inputParameters.device);
+        const PaStreamInfo* streamInfo = Pa_GetStreamInfo(stream);
+        audioData.device = deviceInfo->name;
+        audioData.api = Pa_GetHostApiInfo(deviceInfo->hostApi)->name;
+        audioData.latency = streamInfo->inputLatency;
+        audioData.channels = inputParameters.channelCount;
+        audioData.sampleRate = static_cast<unsigned>(streamInfo->sampleRate);
+        err = Pa_StartStream(stream);
+    }
+
+    Pa_Sleep(3 * 1000);
+
+    // signed long available = Pa_GetStreamReadAvailable(stream);
+    // cout << "Available frames: " << available << endl;
+    // if (available < 0) {
+    //     checkErr(static_cast<PaError>(available));
+    //     return;
+    // }
+    // audioData.samples.resize(available * audioData.channels);
+    // err = Pa_ReadStream(stream, audioData.samples.data(), available);
+    // checkErr(err);
+    // audioData.isValid = true;
+}
+
 
 void AudioRecorder::checkErr(PaError err) {
     if (err != paNoError) {
-        cout << "PortAudio error: " << Pa_GetErrorText(err) << endl;
+        printf("PortAudio error: %s\n", Pa_GetErrorText(err));
         exit(EXIT_FAILURE);
     }
 }
 
-void AudioRecorder::update(AudioData& audioData) {
-    PaError err;
+int AudioRecorder::callback(const void* inputBuffer, void* outputBuffer, unsigned long framesPerBuffer,
+    const PaStreamCallbackTimeInfo* timeInfo, PaStreamCallbackFlags statusFlags, void* userData) {
 
-    // Start input stream
-    err = Pa_StartStream(stream);
-    checkErr(err);
-    Pa_Sleep(3 * 1000);
+    float* in = (float*)inputBuffer;
+    (void)outputBuffer;
 
-    // Read data
-    signed long available = Pa_GetStreamReadAvailable(stream);
-    audioData.samples.resize(available * channels);
-    err = Pa_ReadStream(stream, audioData.samples.data(), available);
-    checkErr(err);
+    int dispSize = 100;
+    printf("\r");
+ 
+    float vol_l = 0;
+    float vol_r = 0;
+
+    for (unsigned long i = 0; i < framesPerBuffer * 2; i += 2) {
+        vol_l = AudioRecorder::max(vol_l, std::abs(in[i]));
+        vol_r = AudioRecorder::max(vol_r, std::abs(in[i+1]));
+    }
+
+    for (int i = 0; i < dispSize; i++) {
+        float barProportion = i / (float)dispSize;
+        if (barProportion <= vol_l && barProportion <= vol_r) {
+            printf("█");
+        } else if (barProportion <= vol_l) {
+            printf("▀");
+        } else if (barProportion <= vol_r) {
+            printf("▄");
+        } else {
+            printf(" ");
+        }
+    }
+
+    fflush(stdout);
+
+    return 0;
 }

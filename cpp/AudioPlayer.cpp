@@ -1,12 +1,7 @@
-#include <iostream>
 #include "AudioPlayer.h"
+#include <iostream>
 
-const std::string deviceName = "pulse";
-constexpr int channels = 1;
-constexpr int sampleRate = 44100;
-constexpr float latency = 0.1f;
-
-using std::cout, std::cin, std::endl;
+using std::cout, std::endl;
 
 
 AudioPlayer::AudioPlayer() {
@@ -14,62 +9,72 @@ AudioPlayer::AudioPlayer() {
     PaError err;
     err = Pa_Initialize();
     AudioPlayer::checkErr(err);
-    outputParameters.device = 9; //Pa_GetDefaultOutputDevice();
-    // if (!deviceName.empty()){ // get device by name
-    //     for (PaDeviceIndex i = 0; i < Pa_GetDeviceCount(); ++i){
-    //       cout << "Device: " << Pa_GetDeviceInfo(i)->name << endl;
-    //       if (std::string(Pa_GetDeviceInfo(i)->name) == deviceName){
-    //           cout << "Using output device: " << deviceName << endl;
-    //           outputParameters.device = i;
-    //           break;
-    //       }
-    //     }
-    // }
 
-    // Initializing parameters
+    // Checking number of devices
+    int numDevices = Pa_GetDeviceCount();
+    printf("Number of devices: %d\n", numDevices);
+    if (numDevices < 0) {
+        printf("Error getting device count.\n");
+        exit(EXIT_FAILURE);
+    } else if (numDevices == 0) {
+        printf("There are no available audio devices on this machine.\n");
+        exit(EXIT_SUCCESS);
+    }
+
+    int device = Pa_GetDefaultOutputDevice();
     const PaDeviceInfo* info = Pa_GetDeviceInfo(outputParameters.device);
-    outputParameters.channelCount = std::min(static_cast<int>(channels), info->maxInputChannels);
+    cout << "Using output device: " << info->name << endl;
+    outputParameters.device = device;
+    outputParameters.channelCount = 2;
     outputParameters.sampleFormat = paFloat32;
-    outputParameters.suggestedLatency = info->defaultHighOutputLatency;
     outputParameters.hostApiSpecificStreamInfo = nullptr;
+    outputParameters.suggestedLatency = info->defaultHighOutputLatency;
+    double sampleRate = info->defaultSampleRate;
 
-    err = Pa_OpenStream(&stream, nullptr, &outputParameters, sampleRate, paFramesPerBufferUnspecified, 0, nullptr, nullptr);
+    err = Pa_OpenStream(
+        &stream,
+        nullptr,
+        &outputParameters,
+        sampleRate,
+        paFramesPerBufferUnspecified, //TODO: change to FRAMES_PER_BUFFER?
+        paNoFlag,
+        nullptr,
+        nullptr
+    );
     checkErr(err);
 }
 
-AudioPlayer::~AudioPlayer()
-{
-  if (stream)
-  {
-    if (Pa_IsStreamActive(stream))
-      Pa_StopStream(stream);
+AudioPlayer::~AudioPlayer() {
+    PaError err;
+    if (stream)
+    {
+        if (Pa_IsStreamActive(stream))
+        err = Pa_StopStream(stream);
 
-    Pa_CloseStream(stream);
-    stream = nullptr;
-  }
+        err = Pa_CloseStream(stream);
+        stream = nullptr;
+    }
 
-  Pa_Terminate();
+    err = Pa_Terminate();
+    checkErr(err);
 }
+
 
 void AudioPlayer::checkErr(PaError err) {
     if (err != paNoError) {
-        cout << "PortAudio error: " << Pa_GetErrorText(err) << endl;
+        printf("PortAudio error: %s\n", Pa_GetErrorText(err));
         exit(EXIT_FAILURE);
     }
 }
 
 void AudioPlayer::play(const AudioData& audioData) {
     PaError err;
-
-    // Start input stream
-    err = Pa_StartStream(stream);
-    checkErr(err);
-
-    // Write data
-    const unsigned long frames = static_cast<unsigned long>(audioData.samples.size());
-    signed long available = Pa_GetStreamWriteAvailable(stream);
-    err = Pa_WriteStream(stream, audioData.samples.data(), std::min(frames, static_cast<unsigned long>(available)));
-    Pa_Sleep(3 * 1000);
-
+    if (audioData.samples.empty()) return;
+    if (Pa_IsStreamStopped(stream)) {
+        err = Pa_StartStream(stream);
+        checkErr(err);
+    }
+    const unsigned long frames = static_cast<unsigned long>(audioData.samples.size() / audioData.channels);
+    err = Pa_WriteStream(stream, audioData.samples.data(), audioData.samples.size());
     checkErr(err);
 }

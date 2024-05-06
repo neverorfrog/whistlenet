@@ -1,14 +1,14 @@
-#include <iostream>
-using std::cout, std::cin, std::endl;
-
+#include "AudioData.h"
 #include "AudioRecorder.h"
 #include "AudioPlayer.h"
-
+#include <iostream>
+using std::cout, std::endl;
 
 int main(){
+    AudioData audioData = AudioData();
     AudioRecorder recorder = AudioRecorder();
+    recorder.record(audioData);
     AudioPlayer player = AudioPlayer();
-    AudioData data = AudioData();
-    recorder.update(data);
-    player.play(data);
-}
+    player.play(audioData);
+    return EXIT_SUCCESS;
+};
