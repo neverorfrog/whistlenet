@@ -3,6 +3,10 @@ from imblearn.combine import SMOTEENN
 from torch.utils.data import DataLoader, random_split
 from torchvision.datasets import MNIST
 from torchvision import transforms
+from core import project_root
+
+projroot = project_root()
+root = f"{projroot}/data"
 
 transform = transforms.Compose(
     [
@@ -15,8 +19,8 @@ class MnistDataset(Dataset):
     """The MNIST dataset"""
     def __init__(self, tobeloaded: bool, params: dict, batch_size=64):
         self.save_parameters()
-        train_data = MNIST(root="./data",train=True, transform=transform, download=True) # TODO hardcodato
-        test_data = MNIST(root="./data",train=False, transform=transform, download=True) # TODO hardcodato
+        train_data = MNIST(root=root,train=True, transform=transform, download=True) # TODO hardcodato
+        test_data = MNIST(root=root,train=False, transform=transform, download=True) # TODO hardcodato
         train_data, train_labels, val_data, val_labels = self.split(train_data.data, train_data.targets, 0.1)
         train_dataset = TensorData(train_data, train_labels)
         val_dataset = TensorData(val_data, val_labels)

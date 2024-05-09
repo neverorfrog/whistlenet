@@ -9,6 +9,7 @@ class CNN(Classifier):
     def __init__(self, name, num_classes, bias=True):
         super().__init__(name, num_classes, bias=True)
         
+        self.example_args = (torch.randn(1,1,28,28),)
         self.activation = nn.LeakyReLU()
         
         #Convolutional Layers (take as input the image)
@@ -21,7 +22,7 @@ class CNN(Classifier):
         conv_layers = []
         for i in range(len(kernels)):
             conv_layers.append(nn.Conv2d(channels[i], channels[i+1], kernel_size=kernels[i], stride=strides[i], device=device))
-            conv_layers.append(nn.BatchNorm2d(channels[i+1]))
+            # conv_layers.append(nn.BatchNorm2d(channels[i+1]))
             conv_layers.append(self.activation)
             conv_layers.append(nn.MaxPool2d(kernel_size=pool_kernels[i], stride=pool_strides[i]))
         self.conv = nn.Sequential(*conv_layers) 

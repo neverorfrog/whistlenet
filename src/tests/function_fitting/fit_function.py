@@ -3,7 +3,7 @@ import numpy as np
 import torch
 import yaml
 from omegaconf import OmegaConf
-from functions import example_function
+from src.tests.function_fitting.functions import example_function
 
 # Load the configuration
 file_path = "function_fitting/config.yaml"

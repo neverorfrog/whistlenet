@@ -6,6 +6,9 @@ import os
 from torch.utils.data import random_split, DataLoader, WeightedRandomSampler
 from core.utils import *
 
+projroot = project_root()
+root = f"{projroot}/data"
+
 def seed_worker(worker_id):
     worker_seed = torch.initial_seed() % 2**32
     np.random.seed(worker_seed)
@@ -24,7 +27,7 @@ class Dataset(Parameters, ABC):
         self.val_data = val_data
         self.test_data = test_data
         self.name = name
-        path = os.path.join("data",self.name)
+        path = os.path.join(root,self.name)
         self.load(path) if tobeloaded else self.save(path)
         self.params = params
         
@@ -116,14 +119,14 @@ class Dataset(Parameters, ABC):
             
     def save(self, path=None):
         if path is None: return
-        path = os.path.join("data",self.name)
+        # path = os.path.join("data",self.name)
         torch.save(self.train_data, open(os.path.join(path,"train_data.dat"), "wb"))
         torch.save(self.val_data, open(os.path.join(path,"val_data.dat"), "wb"))
         torch.save(self.test_data, open(os.path.join(path,"test_data.dat"), "wb"))
         print("DATA SAVED!")
         
     def load(self, path=None):
-        path = os.path.join("data",self.name)
+        # path = os.path.join("data",self.name)
         self.train_data = torch.load(open(os.path.join(path,"train_data.dat"),"rb"))
         self.val_data = torch.load(open(os.path.join(path,"val_data.dat"),"rb"))
         self.test_data = torch.load(open(os.path.join(path,"test_data.dat"),"rb"))

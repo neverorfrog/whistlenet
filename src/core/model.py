@@ -5,7 +5,10 @@ from sklearn.metrics import classification_report
 import torch
 from torch import nn
 from core.utils import Parameters
+from core.utils import project_root
 
+projroot = project_root()
+root = f"{projroot}/models/torch"
 
 class Model(nn.Module, Parameters, ABC):
     """The base class of models"""
@@ -88,7 +91,7 @@ class Classifier(Model):
             return torch.softmax(self(inputs), dim=-1).argmax(axis = -1).squeeze() #shape = (m)
     
     def save(self):
-        path = os.path.join("models",self.name)
+        path = os.path.join(root,self.name)
         if not os.path.exists(path): os.mkdir(path)
         torch.save(self.state_dict(), open(os.path.join(path,"model.pt"), "wb"))
         torch.save(self.test_scores, open(os.path.join(path,"test_scores.pt"), "wb")) 
@@ -98,7 +101,7 @@ class Classifier(Model):
         print("MODEL SAVED!")
 
     def load(self, name):
-        path = os.path.join("models",name)
+        path = os.path.join(root,name)
         self.load_state_dict(torch.load(open(os.path.join(path,"model.pt"),"rb")))
         self.test_scores = torch.load(open(os.path.join(path,"test_scores.pt"),"rb"))
         self.train_scores = torch.load(open(os.path.join(path,"train_scores.pt"),"rb"))
@@ -123,10 +126,9 @@ class Classifier(Model):
             for batch in test_dataloader:
                 inputs = batch[:-1][0].detach().type(torch.float).to(self.device) #one sample on each row -> X.shape = (m, d_in)
                 inputs = inputs.reshape(-1,1,28,28) # TODO hardcodato
+                labels = batch[-1].detach().type(torch.long).to(self.device)
                 predictions_test = self.predict(inputs)
-        report_test = classification_report(data.test_data.labels, predictions_test, digits=3, output_dict=True)
-        print(report_test)
-        exit()
-        if show: 
-            print(report_test)
-        self.test_scores.append(report_test['accuracy']) # TODO hardcodato
+                report_test = classification_report(labels, predictions_test, digits=3, output_dict=True)
+                if show:
+                    print(report_test)
+                self.test_scores.append(report_test['accuracy']) # TODO hardcodato

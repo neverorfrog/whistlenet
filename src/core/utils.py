@@ -3,6 +3,11 @@ import numpy as np
 import inspect
 from matplotlib import pyplot as plt
 import yaml
+import os
+
+def project_root():
+    here = os.path.abspath(os.path.dirname(__file__))
+    return os.path.dirname(os.path.dirname(here))
 
 # Load configuration from a YAML file
 def load_config(file_path):
