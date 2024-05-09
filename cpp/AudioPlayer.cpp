@@ -75,6 +75,6 @@ void AudioPlayer::play(const AudioData& audioData) {
         checkErr(err);
     }
     const unsigned long frames = static_cast<unsigned long>(audioData.samples.size() / audioData.channels);
-    err = Pa_WriteStream(stream, audioData.samples.data(), audioData.samples.size());
+    err = Pa_WriteStream(stream, audioData.samples.data(), frames);
     checkErr(err);
 }

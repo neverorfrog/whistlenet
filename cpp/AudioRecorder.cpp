@@ -21,14 +21,14 @@ AudioRecorder::AudioRecorder() {
     }
 
     const PaDeviceInfo* deviceInfo;
-    for (int i = 0; i < numDevices; i++) {
-        deviceInfo = Pa_GetDeviceInfo(i);
-        printf("Device %d:\n", i);
-        printf("  name: %s\n", deviceInfo->name);
-        printf("  maxInputChannels: %d\n", deviceInfo->maxInputChannels);
-        printf("  maxOutputChannels: %d\n", deviceInfo->maxOutputChannels);
-        printf("  defaultSampleRate: %f\n", deviceInfo->defaultSampleRate);
-    }
+    // for (int i = 0; i < numDevices; i++) {
+    //     deviceInfo = Pa_GetDeviceInfo(i);
+    //     printf("Device %d:\n", i);
+    //     printf("  name: %s\n", deviceInfo->name);
+    //     printf("  maxInputChannels: %d\n", deviceInfo->maxInputChannels);
+    //     printf("  maxOutputChannels: %d\n", deviceInfo->maxOutputChannels);
+    //     printf("  defaultSampleRate: %f\n", deviceInfo->defaultSampleRate);
+    // }
 
     int device = Pa_GetDefaultInputDevice();
     inputParameters.device = device;
@@ -47,7 +47,7 @@ AudioRecorder::AudioRecorder() {
         sampleRate,
         paFramesPerBufferUnspecified, //TODO: change to FRAMES_PER_BUFFER?
         paNoFlag,
-        AudioRecorder::callback,
+        myCallback,
         nullptr
     );
     checkErr(err);
@@ -87,16 +87,18 @@ void AudioRecorder::record(AudioData& audioData) {
 
     Pa_Sleep(3 * 1000);
 
-    // signed long available = Pa_GetStreamReadAvailable(stream);
-    // cout << "Available frames: " << available << endl;
-    // if (available < 0) {
-    //     checkErr(static_cast<PaError>(available));
-    //     return;
-    // }
-    // audioData.samples.resize(available * audioData.channels);
-    // err = Pa_ReadStream(stream, audioData.samples.data(), available);
-    // checkErr(err);
-    // audioData.isValid = true;
+    if (!myCallback) {
+        signed long available = Pa_GetStreamReadAvailable(stream);
+        cout << "Available frames: " << available << endl;
+        if (available < 0) {
+            checkErr(static_cast<PaError>(available));
+            return;
+        }
+        audioData.samples.resize(available * audioData.channels);
+        err = Pa_ReadStream(stream, audioData.samples.data(), available);
+        checkErr(err);
+        audioData.isValid = true;
+    }
 }
 
 

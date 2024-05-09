@@ -6,6 +6,7 @@ class AudioRecorder {
     private:
         PaStream* stream = nullptr;
         PaStreamParameters inputParameters;
+        PaStreamCallback* myCallback = AudioRecorder::callback;
         
     public:
         AudioRecorder();
