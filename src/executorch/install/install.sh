@@ -6,7 +6,7 @@ DEFAULT_SHELL=$(echo $SHELL | awk -F/ '{print $NF}')
 #conda env
 conda create -yn executorch python=3.10.0
 conda activate executorch
-conda install ipykernel ipywidgets scikit-learn matplotlib pyyaml -y
+pip install -r requirements.txt
 
 #user input
 echo "Absolute path to which you want to download the executorch folder"

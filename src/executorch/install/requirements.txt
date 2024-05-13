@@ -1,0 +1,8 @@
+ipykernel
+ipywidgets
+scikit-learn
+matplotlib
+pyyaml
+librosa
+imbalanced-learn
+cmake
