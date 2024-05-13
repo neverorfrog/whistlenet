@@ -8,7 +8,7 @@ from core.utils import Parameters
 from core.utils import project_root
 
 projroot = project_root()
-root = f"{projroot}/models/torch"
+root = f"{projroot}/model-weights/torch"
 
 class Model(nn.Module, Parameters, ABC):
     """The base class of models"""

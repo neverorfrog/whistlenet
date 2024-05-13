@@ -10,8 +10,6 @@
 #include <executorch/runtime/core/portable_type/scalar_type.h>
 #include <executorch/extension/evalue_util/print_evalue.h>
 
-#include <cstddef>
-#include <cstdio>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -21,6 +19,7 @@ using torch::data::Example;
 using std::cout, std::endl;
 
 using namespace torch::executor;
+using torch::executor::util::FileDataLoader;
 
 static uint8_t method_allocator_pool[4 * 1024U * 1024U]; // 4 MB
 
@@ -28,7 +27,7 @@ int main() {
   runtime_init();
 
   // model loader
-  Result<util::FileDataLoader> loader = util::FileDataLoader::from("cnn_ops/model.pte");
+  Result<FileDataLoader> loader = FileDataLoader::from("fc/model.pte");
   assert(loader.ok());
   Result<Program> program = Program::load(&loader.get());
   assert(program.ok());
@@ -44,9 +43,9 @@ int main() {
 
   /* One of the principles of ExecuTorch is giving users control 
   over where the memory used by the runtime comes from. 
-  We need to define two different allocators.*/
+  We need to define two different allocators.
 
-  /*First allocator: MemoryAllocator used to allocate 
+  First allocator: MemoryAllocator used to allocate 
   runtime structures at Method load time. 
   Things like Tensor metadata, the internal chain of instructions, 
   and other runtime state come from this.
@@ -79,7 +78,7 @@ int main() {
     // .get() will always succeed because id < num_memory_planned_buffers.
     size_t buffer_size =
         static_cast<size_t>(method_meta->memory_planned_buffer_size(id).get());
-    ET_LOG(Info, "Setting up planned buffer %zu, size %zu.", id, buffer_size);
+    printf("Setting up planned buffer %zu, size %zu.\n", id, buffer_size);
     planned_buffers.push_back(std::make_unique<uint8_t[]>(buffer_size));
     planned_spans.push_back({planned_buffers.back().get(), buffer_size});
   }
@@ -102,27 +101,27 @@ int main() {
       method.ok(),
       "Loading of method %s failed with status 0x%" PRIx32,
       method_name,
-      method.error());
-  ET_LOG(Info, "Method loaded.");
+      (uint32_t)method.error());
+  printf("Method loaded.\n");
 
   /*Getting input for specific model: if you use one, you have to comment the other
   Need to find a better solution than this zozzata, to test more easily*/ 
 
   // Fully Connected Model
-  // torch::Tensor tensor = torch::randn({1,4});
-  // Tensor::SizesType sizes[] = {1,4};
-  // Tensor::DimOrderType dim_order[] = {0,1};
-  // TensorImpl impl(ScalarType::Float,2,sizes,&tensor,dim_order);
+  torch::Tensor tensor = torch::randn({1,4});
+  Tensor::SizesType sizes[] = {1,4};
+  Tensor::DimOrderType dim_order[] = {0,1};
+  TensorImpl impl(ScalarType::Float,2,sizes,&tensor,dim_order);
 
   // CNN Model
-  const char* kDataRoot = "../python/data/MyMNIST/raw";
-  auto test_dataset = MNIST(kDataRoot, MNIST::Mode::kTest);
-  Example example = test_dataset.get(1);
-  torch::Tensor tensor = example.data;
+  // const char* kDataRoot = "../python/data/MyMNIST/raw";
+  // auto test_dataset = MNIST(kDataRoot, MNIST::Mode::kTest);
+  // Example example = test_dataset.get(1);
+  // torch::Tensor tensor = example.data;
   // torch::Tensor tensor = torch::randn({1,1,28,28});
-  Tensor::SizesType sizes[] = {1,1,28,28};
-  Tensor::DimOrderType dim_order[] = {0,1,2,3};
-  TensorImpl impl(ScalarType::Float,4,sizes,&tensor,dim_order);
+  // Tensor::SizesType sizes[] = {1,1,28,28};
+  // Tensor::DimOrderType dim_order[] = {0,1,2,3};
+  // TensorImpl impl(ScalarType::Float,4,sizes,&tensor,dim_order);
 
   Tensor t(&impl);
   Error set_input_error = method->set_input(t, 0);
@@ -134,12 +133,12 @@ int main() {
       status == Error::Ok,
       "Execution of method %s failed with status 0x%" PRIx32,
       method_name,
-      status);
-  ET_LOG(Info, "Model executed successfully.");
+      (uint32_t)status);
+  printf("Model executed successfully.\n");
 
   // Print outputs
   std::vector<EValue> outputs(method->outputs_size());
-  ET_LOG(Info, "%zu outputs: ", outputs.size());
+  printf("%zu outputs: ", outputs.size());
   status = method->get_outputs(outputs.data(), outputs.size());
   ET_CHECK(status == Error::Ok);
   cout << torch::executor::util::evalue_edge_items(10);

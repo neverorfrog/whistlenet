@@ -18,7 +18,7 @@ cmake .. -DCMAKE_BUILD_TYPE=Release -DEXECUTORCH_BUILD_SDK=ON -DBUCK2=${TORCH_PA
 # Check if CMake configuration was successful
 if [ $? -eq 0 ]; then
     # Build the project
-    cmake --build . -j12
+    cmake --build . -j13
 else
     echo "CMake configuration failed. Exiting..."
 fi
