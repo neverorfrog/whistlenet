@@ -9,4 +9,5 @@ __pycache__
 */build
 .vscode
 *.pyc
-build
+src/audiocpp/build
+src/executorch/cpp/build

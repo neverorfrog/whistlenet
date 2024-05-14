@@ -1,4 +1,0 @@
-/home/neverorfrog/code/whistle/whistlenet/cpp/build/CMakeFiles/audiolib.dir
-/home/neverorfrog/code/whistle/whistlenet/cpp/build/CMakeFiles/test.dir
-/home/neverorfrog/code/whistle/whistlenet/cpp/build/CMakeFiles/edit_cache.dir
-/home/neverorfrog/code/whistle/whistlenet/cpp/build/CMakeFiles/rebuild_cache.dir
