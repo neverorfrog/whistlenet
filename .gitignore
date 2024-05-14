@@ -10,4 +10,4 @@ __pycache__
 .vscode
 *.pyc
 src/audiocpp/build
-src/executorch/cpp/build
+src/tests/cpp_inference/build

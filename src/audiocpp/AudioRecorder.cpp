@@ -20,8 +20,15 @@ AudioRecorder::AudioRecorder() {
         exit(EXIT_SUCCESS);
     }
 
+    // Setting input device
     int device = Pa_GetDefaultInputDevice();
     inputParameters.device = device;
+    if (inputParameters.device == paNoDevice){
+        printf("PortAudioRecorder: No input device!\n");
+        exit(EXIT_FAILURE);
+    }
+
+    // Setting parameters for input stream
     const PaDeviceInfo* info = Pa_GetDeviceInfo(inputParameters.device);
     cout << "Using input device: " << info->name << endl;
     inputParameters.channelCount = 2;
@@ -47,7 +54,7 @@ AudioRecorder::~AudioRecorder() {
     PaError err;
     if (stream) {
         if (Pa_IsStreamActive(stream))
-        err = Pa_StopStream(stream);
+            err = Pa_StopStream(stream);
 
         err = Pa_CloseStream(stream);
         stream = nullptr;
@@ -86,7 +93,16 @@ void AudioRecorder::record(AudioData& audioData) {
         }
         audioData.samples.resize(available * audioData.channels);
         err = Pa_ReadStream(stream, audioData.samples.data(), available);
-        checkErr(err);
+        if (err != paNoError) {
+            cout << "PortAudioRecorder: Pa_ReadStream failed: " << Pa_GetErrorText(err) << "(" << err << ")" << endl;
+            audioData.samples.clear();
+
+            // restart stream immediately after timeout
+            if (err == paTimedOut)
+                Pa_StopStream(stream);
+
+            return;
+        }
         audioData.isValid = true;
     }
 }

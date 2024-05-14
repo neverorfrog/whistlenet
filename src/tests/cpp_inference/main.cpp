@@ -16,18 +16,41 @@
 
 using torch::data::datasets::MNIST;
 using torch::data::Example;
-using std::cout, std::endl;
-
+using std::cout, std::endl, std::cerr;
 using namespace torch::executor;
 using torch::executor::util::FileDataLoader;
-
+static constexpr LogLevel Info = torch::executor::LogLevel::Info;
 static uint8_t method_allocator_pool[4 * 1024U * 1024U]; // 4 MB
+
+static TensorImpl fc_tensor() {
+  torch::Tensor tensor = torch::randn({1,4});
+  Tensor::SizesType sizes[] = {1,4};
+  Tensor::DimOrderType dim_order[] = {0,1};
+  TensorImpl impl(ScalarType::Float,2,sizes,&tensor,dim_order);
+  return impl;
+}
+
+static TensorImpl cnn_tensor() {
+  const char* kDataRoot = "../python/data/MyMNIST/raw";
+  auto test_dataset = MNIST(kDataRoot, MNIST::Mode::kTest);
+  Example example = test_dataset.get(1);
+  torch::Tensor tensor = example.data;
+  // torch::Tensor tensor = torch::randn({1,1,28,28});
+  Tensor::SizesType sizes[] = {1,1,28,28};
+  Tensor::DimOrderType dim_order[] = {0,1,2,3};
+  TensorImpl impl(ScalarType::Float,4,sizes,&tensor,dim_order);
+  return impl;
+}
+
+static TensorImpl input_tensor(){
+  return cnn_tensor();
+}
 
 int main() {
   runtime_init();
 
   // model loader
-  Result<FileDataLoader> loader = FileDataLoader::from("fc/model.pte");
+  Result<FileDataLoader> loader = FileDataLoader::from("cnn/model.pte");
   assert(loader.ok());
   Result<Program> program = Program::load(&loader.get());
   assert(program.ok());
@@ -78,7 +101,7 @@ int main() {
     // .get() will always succeed because id < num_memory_planned_buffers.
     size_t buffer_size =
         static_cast<size_t>(method_meta->memory_planned_buffer_size(id).get());
-    printf("Setting up planned buffer %zu, size %zu.\n", id, buffer_size);
+    ET_LOG(Info, "Setting up planned buffer %zu, size %zu.\n", id, buffer_size);
     planned_buffers.push_back(std::make_unique<uint8_t[]>(buffer_size));
     planned_spans.push_back({planned_buffers.back().get(), buffer_size});
   }
@@ -101,28 +124,13 @@ int main() {
       method.ok(),
       "Loading of method %s failed with status 0x%" PRIx32,
       method_name,
-      (uint32_t)method.error());
+      method.error()
+  );
   printf("Method loaded.\n");
 
   /*Getting input for specific model: if you use one, you have to comment the other
   Need to find a better solution than this zozzata, to test more easily*/ 
-
-  // Fully Connected Model
-  torch::Tensor tensor = torch::randn({1,4});
-  Tensor::SizesType sizes[] = {1,4};
-  Tensor::DimOrderType dim_order[] = {0,1};
-  TensorImpl impl(ScalarType::Float,2,sizes,&tensor,dim_order);
-
-  // CNN Model
-  // const char* kDataRoot = "../python/data/MyMNIST/raw";
-  // auto test_dataset = MNIST(kDataRoot, MNIST::Mode::kTest);
-  // Example example = test_dataset.get(1);
-  // torch::Tensor tensor = example.data;
-  // torch::Tensor tensor = torch::randn({1,1,28,28});
-  // Tensor::SizesType sizes[] = {1,1,28,28};
-  // Tensor::DimOrderType dim_order[] = {0,1,2,3};
-  // TensorImpl impl(ScalarType::Float,4,sizes,&tensor,dim_order);
-
+  TensorImpl impl = input_tensor();
   Tensor t(&impl);
   Error set_input_error = method->set_input(t, 0);
   assert(set_input_error == Error::Ok);

@@ -48,8 +48,8 @@ class Classifier(Model):
         
     def training_step(self,batch): #forward propagation
         inputs = batch[:-1][0].type(torch.float).to(self.device) #one sample on each row -> X.shape = (m, d_in)
-        # inputs = inputs.reshape(-1,1,513) # TODO hardcodato
-        inputs = inputs.reshape(-1,1,28,28) # TODO hardcodato
+        inputs = inputs.reshape(-1,1,513) # TODO hardcodato
+        # inputs = inputs.reshape(-1,1,28,28) # TODO hardcodato
         labels = batch[-1].type(torch.long) # labels -> shape = (m)
         logits = self(inputs).squeeze()
         loss = self.loss_function(logits, labels)
@@ -58,8 +58,8 @@ class Classifier(Model):
     def validation_step(self,batch):
         with torch.no_grad():
             inputs = batch[:-1][0].type(torch.float).to(self.device) #one sample on each row -> X.shape = (m, d_in)
-            # inputs = inputs.reshape(-1,1,513) # TODO hardcodato
-            inputs = inputs.reshape(-1,1,28,28) # TODO hardcodato
+            inputs = inputs.reshape(-1,1,513) # TODO hardcodato
+            # inputs = inputs.reshape(-1,1,28,28) # TODO hardcodato
             labels = batch[-1].type(torch.long) # labels -> shape = (m)
             logits = self(inputs).squeeze()
             loss = self.loss_function(logits, labels)
@@ -125,7 +125,8 @@ class Classifier(Model):
         with torch.no_grad():
             for batch in test_dataloader:
                 inputs = batch[:-1][0].detach().type(torch.float).to(self.device) #one sample on each row -> X.shape = (m, d_in)
-                inputs = inputs.reshape(-1,1,28,28) # TODO hardcodato
+                inputs = inputs.reshape(-1,1,513) # TODO hardcodato
+                # inputs = inputs.reshape(-1,1,28,28) # TODO hardcodato
                 labels = batch[-1].detach().type(torch.long).to(self.device)
                 predictions_test = self.predict(inputs)
                 report_test = classification_report(labels, predictions_test, digits=3, output_dict=True)

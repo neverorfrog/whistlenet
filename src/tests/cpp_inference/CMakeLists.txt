@@ -39,14 +39,14 @@ set(Blue "${Esc}[34m")
 project(cpp-demo VERSION 0.1 LANGUAGES CXX)
 include(find-executorch.cmake)
 
-set(_lib_name "fc")
+set(_lib_name "cnn")
 include(${CMAKE_CURRENT_LIST_DIR}/kernel.cmake)
 
 # executable
-add_executable(example 
-  ${CMAKE_CURRENT_SOURCE_DIR}/example.cpp
+add_executable(main 
+  ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
   ${ET_ROOT}/extension/data_loader/file_data_loader.cpp
   ${ET_ROOT}/extension/evalue_util/print_evalue.cpp
 )
-target_include_directories(example PRIVATE "${TORCH_PATH}")
-target_link_libraries(example cxx_setup "${TORCH_LIBRARIES}" executorch ${_lib_name})
+target_include_directories(main PRIVATE "${TORCH_PATH}")
+target_link_libraries(main cxx_setup "${TORCH_LIBRARIES}" executorch ${_lib_name})

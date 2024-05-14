@@ -6,3 +6,5 @@ pyyaml
 librosa
 imbalanced-learn
 cmake
+scipy
+sounddevice

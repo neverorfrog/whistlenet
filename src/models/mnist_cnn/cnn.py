@@ -10,7 +10,7 @@ class CNN(Classifier):
         super().__init__(name, num_classes, bias=True)
         
         self.example_args = (torch.randn(1,1,28,28),)
-        self.activation = nn.LeakyReLU()
+        self.activation = nn.ReLU()
         
         #Convolutional Layers (take as input the image)
         channels = params['channels']
