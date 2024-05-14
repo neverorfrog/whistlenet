@@ -20,16 +20,6 @@ AudioRecorder::AudioRecorder() {
         exit(EXIT_SUCCESS);
     }
 
-    const PaDeviceInfo* deviceInfo;
-    // for (int i = 0; i < numDevices; i++) {
-    //     deviceInfo = Pa_GetDeviceInfo(i);
-    //     printf("Device %d:\n", i);
-    //     printf("  name: %s\n", deviceInfo->name);
-    //     printf("  maxInputChannels: %d\n", deviceInfo->maxInputChannels);
-    //     printf("  maxOutputChannels: %d\n", deviceInfo->maxOutputChannels);
-    //     printf("  defaultSampleRate: %f\n", deviceInfo->defaultSampleRate);
-    // }
-
     int device = Pa_GetDefaultInputDevice();
     inputParameters.device = device;
     const PaDeviceInfo* info = Pa_GetDeviceInfo(inputParameters.device);
