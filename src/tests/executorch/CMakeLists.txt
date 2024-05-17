@@ -39,7 +39,7 @@ set(Blue "${Esc}[34m")
 project(cpp-demo VERSION 0.1 LANGUAGES CXX)
 include(find-executorch.cmake)
 
-set(_lib_name "cnn")
+set(_lib_name "fc")
 include(${CMAKE_CURRENT_LIST_DIR}/kernel.cmake)
 
 # executable

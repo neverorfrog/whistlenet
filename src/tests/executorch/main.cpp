@@ -43,14 +43,14 @@ static TensorImpl cnn_tensor() {
 }
 
 static TensorImpl input_tensor(){
-  return cnn_tensor();
+  return fc_tensor();
 }
 
 int main() {
   runtime_init();
 
   // model loader
-  Result<FileDataLoader> loader = FileDataLoader::from("cnn/model.pte");
+  Result<FileDataLoader> loader = FileDataLoader::from("fc/model.pte");
   assert(loader.ok());
   Result<Program> program = Program::load(&loader.get());
   assert(program.ok());

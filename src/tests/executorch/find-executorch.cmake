@@ -25,6 +25,7 @@ set(required_lib_list
     cpuinfo
     pthreadpool
 )
+
 foreach(lib ${required_lib_list})
     set(lib_var "LIB_${lib}")
     find_library(${lib_var} ${lib} REQUIRED CMAKE_FIND_ROOT_PATH_BOTH)

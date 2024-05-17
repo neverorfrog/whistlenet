@@ -9,11 +9,11 @@ import os
 
 from typing import Any, Dict, Optional, Tuple, Union
 
-import executorch.exir as exir
+import executorch.exir as exir # type: ignore
 
 import torch
-from executorch.exir import EdgeProgramManager, ExecutorchProgramManager, to_edge
-from executorch.exir.tracer import Value
+from executorch.exir import EdgeProgramManager, ExecutorchProgramManager, to_edge # type: ignore
+from executorch.exir.tracer import Value # type: ignore
 from torch._export import capture_pre_autograd_graph
 from torch.export import export, ExportedProgram
 
