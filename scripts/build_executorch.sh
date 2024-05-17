@@ -1,6 +1,6 @@
 #!/bin/bash
+# https://pytorch.org/executorch/stable/runtime-build-and-cross-compilation.html
 
-conda activate executorch
 cd ${TORCH_PATH}/executorch
 
 # Remove existing cmake-out directory
@@ -8,17 +8,22 @@ rm -rf cmake-out
 
 # Create cmake-out directory
 mkdir cmake-out
-
-# Change to cmake-out directory
 cd cmake-out
 
 # Run CMake configuration
-cmake .. -DCMAKE_BUILD_TYPE=Release -DEXECUTORCH_BUILD_SDK=ON -DBUCK2=${TORCH_PATH}/buck2e
+cmake .. -DCMAKE_BUILD_TYPE=Release \
+    -DEXECUTORCH_BUILD_XNNPACK=ON \
+    -DEXECUTORCH_BUILD_EXTENSION_DATA_LOADER=ON \
+    -DEXECUTORCH_BUILD_SDK=ON \
+    -DBUCK2=${TORCH_PATH}/buck2e \
+    -DEXECUTORCH_ENABLE_LOGGING=1 \
+    -DPYTHON_EXECUTABLE=python \
+    -DEXECUTORCH_BUILD_EXTENSION_MODULE=ON
 
 # Check if CMake configuration was successful
 if [ $? -eq 0 ]; then
     # Build the project
-    cmake --build . -j13
+    sudo cmake --build . -j13 --target install --config Release
 else
     echo "CMake configuration failed. Exiting..."
 fi
