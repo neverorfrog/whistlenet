@@ -8,3 +8,4 @@ imbalanced-learn
 cmake
 scipy
 sounddevice
+omegaconf
