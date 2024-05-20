@@ -9,3 +9,9 @@ cmake
 scipy
 sounddevice
 omegaconf
+tomli
+cmake
+pre-commit
+flake8
+black
+mypy
