@@ -17,16 +17,16 @@ repos:
         name: isort (python)
         args: ["--profile", "black", "--line-length", "79"]
 
-  # - repo: https://github.com/PyCQA/flake8
-  #   rev: 7.0.0
-  #   hooks:
-  #     - id: flake8
-  #       args: ["--exclude", "__init__.py "]
-
   # - repo: https://github.com/pre-commit/mirrors-mypy
   #   rev: v1.10.0
   #   hooks:
   #     - id: mypy
   #       types: [python]
   #       args: [--strict, --ignore-missing-imports]
+
+  # - repo: https://github.com/PyCQA/flake8
+  #   rev: 7.0.0
+  #   hooks:
+  #     - id: flake8
+  #       args: ["--exclude", "__init__.py "]
         
