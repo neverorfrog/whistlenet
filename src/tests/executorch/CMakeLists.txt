@@ -37,9 +37,28 @@ set(Green "${Esc}[32m")
 set(Blue "${Esc}[34m")
 
 project(cpp-demo VERSION 0.1 LANGUAGES CXX)
-include(find-executorch.cmake)
 
-set(_lib_name "fc")
+find_package(Torch REQUIRED)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
+if(Torch_FOUND)
+  message(STATUS "${Green}LIB_Torch found${ColourReset}")
+endif()
+
+list(APPEND CMAKE_PREFIX_PATH
+    "${ET_ROOT}/cmake-out"
+    "${ET_ROOT}/cmake-out/kernels/portable"
+    "${ET_ROOT}/cmake-out/sdk"
+    "${ET_ROOT}/cmake-out/extension/data_loader"
+)
+find_package(executorch REQUIRED)
+if(executorch_FOUND)
+  message(STATUS "${Green}LIB_Executorch found${ColourReset}")
+endif()
+
+link_directories("${ET_ROOT}/cmake-out/extension/runner_util")
+find_library(extension_runner_util HINTS "${ET_ROOT}/cmake-out/extension/runner_util")
+
+set(_lib_name "cnn")
 include(${CMAKE_CURRENT_LIST_DIR}/kernel.cmake)
 
 # executable
@@ -49,4 +68,4 @@ add_executable(main
   ${ET_ROOT}/extension/evalue_util/print_evalue.cpp
 )
 target_include_directories(main PRIVATE "${TORCH_PATH}")
-target_link_libraries(main cxx_setup "${TORCH_LIBRARIES}" executorch ${_lib_name})
+target_link_libraries(main cxx_setup "${TORCH_LIBRARIES}" executorch ${_lib_name} extension_runner_util)

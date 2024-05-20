@@ -4,6 +4,7 @@
 #include <executorch/runtime/platform/runtime.h>
 #include <executorch/runtime/core/data_loader.h>
 #include <executorch/extension/memory_allocator/malloc_memory_allocator.h>
+#include <executorch/extension/runner_util/inputs.h>
 #include <executorch/util/util.h>
 #include <executorch/runtime/platform/log.h>
 #include <executorch/runtime/executor/method.h>
@@ -31,9 +32,9 @@ static TensorImpl fc_tensor() {
 }
 
 static TensorImpl cnn_tensor() {
-  const char* kDataRoot = "../python/data/MyMNIST/raw";
+  const char* kDataRoot = "MNIST/raw";
   auto test_dataset = MNIST(kDataRoot, MNIST::Mode::kTest);
-  Example example = test_dataset.get(1);
+  Example example = test_dataset.get(100);
   torch::Tensor tensor = example.data;
   // torch::Tensor tensor = torch::randn({1,1,28,28});
   Tensor::SizesType sizes[] = {1,1,28,28};
@@ -43,26 +44,50 @@ static TensorImpl cnn_tensor() {
 }
 
 static TensorImpl input_tensor(){
-  return fc_tensor();
+  return cnn_tensor();
 }
 
 int main() {
   runtime_init();
+  std::string path = "model.pte";
+  const char* model_path = path.c_str();
 
-  // model loader
-  Result<FileDataLoader> loader = FileDataLoader::from("fc/model.pte");
-  assert(loader.ok());
+  // Create a loader to get the data of the program file.
+  Result<FileDataLoader> loader = FileDataLoader::from(model_path);
+  ET_CHECK_MSG(
+    loader.ok(),
+    "FileDataLoader::from() failed: 0x%" PRIx32,
+    (uint32_t)loader.error()
+  );
+
+  // Load the program
   Result<Program> program = Program::load(&loader.get());
-  assert(program.ok());
+  if (!program.ok()) {
+    ET_LOG(Error, "Failed to parse model file %s", model_path);
+    return 1;
+  }
+  ET_LOG(Info, "Model file %s is loaded.", model_path);
 
-  /*Method names map back to Python nn.Module method names.*/
-  const char* method_name = "forward";
+  // Use the first method in the program.
+  const char* method_name = nullptr;
+  {
+    const auto method_name_result = program->get_method_name(0);
+    ET_CHECK_MSG(method_name_result.ok(), "Program has no methods");
+    method_name = *method_name_result;
+  }
+  ET_LOG(Info, "Using method %s", method_name);
+
 
   /* MethodMeta is a lightweight structure that lets us gather metadata
   information about a specific method. In this case we are looking to
   get the required size of the memory planned buffers for the method "forward".*/
   Result<MethodMeta> method_meta = program->method_meta(method_name);
-  assert(method_meta.ok());
+  ET_CHECK_MSG(
+      method_meta.ok(),
+      "Failed to get method_meta for %s: 0x%" PRIx32,
+      method_name,
+      (uint32_t)method_meta.error()
+  );
 
   /* One of the principles of ExecuTorch is giving users control 
   over where the memory used by the runtime comes from. 
@@ -94,9 +119,8 @@ int main() {
   environments may have more than one for, e.g., slow/large DRAM and
   fast/small SRAM, or for memory associated with particular cores. */
   std::vector<std::unique_ptr<uint8_t[]>> planned_buffers;
-  size_t num_memory_planned_buffers = method_meta->num_memory_planned_buffers();
-
   std::vector<Span<uint8_t>> planned_spans; // Passed to the allocator
+  size_t num_memory_planned_buffers = method_meta->num_memory_planned_buffers();
   for (size_t id = 0; id < num_memory_planned_buffers; ++id) {
     // .get() will always succeed because id < num_memory_planned_buffers.
     size_t buffer_size =
@@ -119,21 +143,27 @@ int main() {
   /*Load the method from the program, using the provided allocators. Running
   the method can mutate the memory-planned buffers, so the method should only
   be used by a single thread at at time, but it can be reused.*/
-  Result<Method> method =  program->load_method(method_name, &memory_manager);
+  Result<Method> method = program->load_method(method_name, &memory_manager);
   ET_CHECK_MSG(
       method.ok(),
       "Loading of method %s failed with status 0x%" PRIx32,
       method_name,
-      method.error()
-  );
-  printf("Method loaded.\n");
+      (uint32_t)method.error());
+  ET_LOG(Info, "Method loaded.");
 
   /*Getting input for specific model: if you use one, you have to comment the other
   Need to find a better solution than this zozzata, to test more easily*/ 
-  TensorImpl impl = input_tensor();
-  Tensor t(&impl);
-  Error set_input_error = method->set_input(t, 0);
-  assert(set_input_error == Error::Ok);
+  // TensorImpl impl = input_tensor();
+  // Tensor t(&impl);
+  // Error set_input_error = method->set_input(t, 0);
+  // assert(set_input_error == Error::Ok);
+
+  auto inputs = util::prepare_input_tensors(*method);
+  ET_CHECK_MSG(
+      inputs.ok(),
+      "Could not prepare inputs: 0x%" PRIx32,
+      (uint32_t)inputs.error());
+  ET_LOG(Info, "Inputs prepared.");
 
   // Run the model.
   Error status = method->execute();

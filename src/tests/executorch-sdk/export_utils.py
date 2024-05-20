@@ -6,17 +6,18 @@
 
 import logging
 import os
-
 from typing import Any, Dict, Optional, Tuple, Union
 
-import executorch.exir as exir # type: ignore
-
+import executorch.exir as exir  # type: ignore
 import torch
-from executorch.exir import EdgeProgramManager, ExecutorchProgramManager, to_edge # type: ignore
-from executorch.exir.tracer import Value # type: ignore
+from executorch.exir import (  # type: ignore
+    EdgeProgramManager,
+    ExecutorchProgramManager,
+    to_edge,
+)
+from executorch.exir.tracer import Value  # type: ignore
 from torch._export import capture_pre_autograd_graph
-from torch.export import export, ExportedProgram
-
+from torch.export import ExportedProgram, export
 
 _EDGE_COMPILE_CONFIG = exir.EdgeCompileConfig(
     _check_ir_validity=True,
@@ -66,7 +67,9 @@ def export_to_edge(
     edge_compile_config=_EDGE_COMPILE_CONFIG,
 ) -> EdgeProgramManager:
     core_aten_ep = _to_core_aten(model, example_inputs, dynamic_shapes)
-    return _core_aten_to_edge(core_aten_ep, edge_constant_methods, edge_compile_config)
+    return _core_aten_to_edge(
+        core_aten_ep, edge_constant_methods, edge_compile_config
+    )
 
 
 def export_to_exec_prog(
@@ -91,7 +94,9 @@ def export_to_exec_prog(
     return exec_prog
 
 
-def save_pte_program(buffer: bytes, model_name: str, output_dir: str = "") -> None:
+def save_pte_program(
+    buffer: bytes, model_name: str, output_dir: str = ""
+) -> None:
     filename = os.path.join(output_dir, f"{model_name}.pte")
     try:
         with open(filename, "wb") as file:

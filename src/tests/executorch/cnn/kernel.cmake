@@ -3,6 +3,7 @@ set(kernel_sources
       ${ET_ROOT}/kernels/portable/cpu/op_alias_copy.cpp
       ${ET_ROOT}/kernels/portable/cpu/op_permute_copy.cpp
       ${ET_ROOT}/kernels/portable/cpu/op_leaky_relu.cpp
+      ${ET_ROOT}/kernels/portable/cpu/op_relu.cpp
       ${ET_ROOT}/kernels/portable/cpu/op_to_copy.cpp
       ${ET_ROOT}/kernels/portable/cpu/op_convolution.cpp
       ${ET_ROOT}/kernels/portable/cpu/op_max_pool2d_with_indices.cpp

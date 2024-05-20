@@ -14,6 +14,10 @@
   kernels:
     - arg_meta: null
       kernel_name: torch::executor::leaky_relu_out
+- op: relu.out
+  kernels:
+    - arg_meta: null
+      kernel_name: torch::executor::relu_out
 - op: _to_copy.out
   kernels:
     - arg_meta: null
