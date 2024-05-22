@@ -1,3 +1,4 @@
-from .mlp import KernelMLP
+from .ckconv import CKConv
+from .expression import Multiply, Sine, Swish
+from .kernelnet import KernelNet
 from .linear import Linear1d
-from .ops import Expression, Multiply, Sine

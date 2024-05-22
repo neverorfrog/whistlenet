@@ -1,11 +1,9 @@
 import torch
 import torch.nn as nn
 
+
 def Linear1d(
-    in_channels: int,
-    out_channels: int,
-    stride: int = 1,
-    bias: bool = True
+    in_channels: int, out_channels: int, stride: int = 1, bias: bool = True
 ) -> torch.nn.Module:
     """
     Create a linear layer in terms of pointwise convolution.
@@ -19,4 +17,6 @@ def Linear1d(
     Returns:
         torch.nn.Module: The created 1D linear convolutional layer.
     """
-    return nn.Conv1d(in_channels, out_channels, kernel_size=1, stride=stride, bias=bias)
+    return nn.Conv1d(
+        in_channels, out_channels, kernel_size=1, stride=stride, bias=bias
+    )

@@ -9,5 +9,5 @@ __pycache__
 */build
 .vscode
 *.pyc
-src/audiocpp/build
-src/tests/cpp_inference/build
+src/*/build
+src/tests/*/build
