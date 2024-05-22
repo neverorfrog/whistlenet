@@ -9,21 +9,26 @@ from torch import nn
 from core.utils import Parameters, project_root
 
 projroot = project_root()
-root = f"{projroot}/model-weights/torch"
+root = f"{projroot}/weights"
 
 
 class Model(nn.Module, Parameters, ABC):
     """The base class of models"""
 
     def __init__(self, name: str = None) -> None:
-        super().__init__()
-        self.save_parameters()
+        super(Model, self).__init__()
+        self.name = name
         self.device = torch.device(
             "cuda" if torch.cuda.is_available() else "cpu"
         )
 
     @abstractmethod
-    def forward(self, X):
+    def forward(self, X) -> torch.Tensor:
+        pass
+
+    @property
+    @abstractmethod
+    def example_input(self) -> tuple:
         pass
 
     def save(self) -> None:
@@ -52,7 +57,7 @@ class Classifier(Model):
     """The base class of models. Not instantiable because forward inference has to be defined by subclasses."""
 
     def __init__(self, name, num_classes, bias=True) -> None:
-        super().__init__()
+        super().__init__(name)
         self.device = torch.device(
             "cuda" if torch.cuda.is_available() else "cpu"
         )

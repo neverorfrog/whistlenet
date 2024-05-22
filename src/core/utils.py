@@ -7,6 +7,14 @@ import yaml
 from matplotlib import pyplot as plt
 
 
+def to_numpy(tensor) -> np.ndarray:
+    return (
+        tensor.detach().cpu().numpy()
+        if tensor.requires_grad
+        else tensor.cpu().numpy()
+    )
+
+
 def project_root() -> str:
     here = os.path.abspath(os.path.dirname(__file__))
     return os.path.dirname(os.path.dirname(here))

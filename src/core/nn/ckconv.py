@@ -1,6 +1,6 @@
 import torch
 
-from core.nn import KernelNet
+from core.nn.kernelnet import KernelNet
 
 
 class CKConv(torch.nn.Module):
@@ -77,6 +77,5 @@ class CKConv(torch.nn.Module):
                 torch.linspace(-1.0, 1.0, x.shape[-1])
                 .unsqueeze(0)
                 .unsqueeze(0)
-            )
-            # -> Of form (batch_size=1, in_channels=1, x_dimension=x.shape[-1])
+            )  # -> Of form (batch_size=1, in_channels=1, x_dimension=x.shape[-1])
         return self.rel_positions

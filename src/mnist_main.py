@@ -5,7 +5,7 @@ from matplotlib import pyplot as plt
 
 from core.trainer import Trainer
 from datamodules.mnist import MnistDataset
-from models.mnist_cnn.cnn import CNN
+from models.cnn import CNN
 from models.mnist_cnn.config import DATA_PARAMS, TRAIN_PARAMS
 
 here = pathlib.Path(__file__).resolve().parent

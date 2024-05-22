@@ -3,7 +3,35 @@ import torch.nn as nn
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 from core.model import Classifier
-from models.whistlenet.config import MODEL_PARAMS as params
+
+DOMAIN_PARAMS = {"num_classes": 2, "input_channels": 1}
+
+DATA_PARAMS = {
+    "val_split_size": 0.15,
+    "class_weights": [1, 30],
+    "resample": True,
+}
+
+TRAIN_PARAMS = {
+    "max_epochs": 20,
+    "learning_rate": 0.000001,
+    "batch_size": 64,
+    "patience": 5,
+    "metrics": "f1-score",
+    "optim_function": torch.optim.Adam,
+    "weight_decay": 0.0001,
+    "loss_function": nn.NLLLoss(),
+}
+
+MODEL_PARAMS = {
+    "channels": [1, 32, 64, 128, 64],
+    "kernels": [5, 5, 5, 5],
+    "strides": [2, 2, 2, 1],
+    "pool_kernels": [2, 2, 2, 2],
+    "pool_strides": [1, 1, 1, 1],
+    "fc_dims": [3520, 2],
+    "dropout": 0,
+}
 
 
 class WhistleNet(Classifier):
@@ -11,11 +39,11 @@ class WhistleNet(Classifier):
         super().__init__(name, num_classes, bias=True)
 
         # Convolutional Layers (take as input the image)
-        channels = params["channels"]
-        kernels = params["kernels"]
-        strides = params["strides"]
-        pool_kernels = params["pool_kernels"]
-        pool_strides = params["pool_strides"]
+        channels = MODEL_PARAMS["channels"]
+        kernels = MODEL_PARAMS["kernels"]
+        strides = MODEL_PARAMS["strides"]
+        pool_kernels = MODEL_PARAMS["pool_kernels"]
+        pool_strides = MODEL_PARAMS["pool_strides"]
 
         conv_layers = []
         for i in range(3):
@@ -35,7 +63,7 @@ class WhistleNet(Classifier):
                     kernel_size=pool_kernels[i], stride=pool_strides[i]
                 )
             )
-            conv_layers.append(nn.Dropout(params["dropout"]))
+            conv_layers.append(nn.Dropout(MODEL_PARAMS["dropout"]))
         conv_layers.append(
             nn.Conv1d(
                 channels[-2],
@@ -49,12 +77,12 @@ class WhistleNet(Classifier):
         self.conv = nn.Sequential(*conv_layers)
 
         # Fully Connected layers
-        fc_dims = params["fc_dims"]
+        fc_dims = MODEL_PARAMS["fc_dims"]
         fc_layers = []
         for i in range(len(fc_dims) - 1):
             fc_layers.append(nn.Linear(fc_dims[i], fc_dims[i + 1], bias=bias))
             fc_layers.append(nn.ReLU())
-        fc_layers.append(nn.Dropout(params["dropout"]))
+        fc_layers.append(nn.Dropout(MODEL_PARAMS["dropout"]))
         self.fc = nn.Sequential(*fc_layers)
 
     @property

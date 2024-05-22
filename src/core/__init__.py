@@ -1,6 +1,7 @@
 from .audio import Audio
 from .dataset import Dataset, TensorData
+from .inference import *
 from .model import Classifier, Model
 from .nn import *
 from .trainer import Trainer
-from .utils import Parameters, load_config, project_root
+from .utils import Parameters, load_config, project_root, to_numpy
