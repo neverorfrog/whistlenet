@@ -2,3 +2,6 @@ from .cnn import CNN
 from .cnn import DATA_PARAMS as MNIST_CONFIG
 from .cnn import TRAIN_PARAMS as TRAIN_CONFIG
 from .toymodel import ToyModel
+from .whistlenet import DATA_PARAMS as WHISTLEDATA_CONFIG
+from .whistlenet import TRAIN_PARAMS as WHISTLETRAIN_CONFIG
+from .whistlenet import WhistleNet

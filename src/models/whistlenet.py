@@ -1,6 +1,8 @@
 import torch
 import torch.nn as nn
 
+import core.nn as mynn
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 from core.model import Classifier
 
@@ -13,12 +15,12 @@ DATA_PARAMS = {
 }
 
 TRAIN_PARAMS = {
-    "max_epochs": 20,
-    "learning_rate": 0.000001,
+    "max_epochs": 30,
+    "learning_rate": 0.001,
     "batch_size": 64,
-    "patience": 5,
+    "patience": 10,
     "metrics": "f1-score",
-    "optim_function": torch.optim.Adam,
+    "optim_function": torch.optim.RAdam,
     "weight_decay": 0.0001,
     "loss_function": nn.NLLLoss(),
 }
@@ -30,7 +32,7 @@ MODEL_PARAMS = {
     "pool_kernels": [2, 2, 2, 2],
     "pool_strides": [1, 1, 1, 1],
     "fc_dims": [3520, 2],
-    "dropout": 0,
+    "dropout": 0.3,
 }
 
 
@@ -57,13 +59,14 @@ class WhistleNet(Classifier):
                 )
             )
             conv_layers.append(nn.BatchNorm1d(channels[i + 1]))
-            conv_layers.append(nn.LeakyReLU())
+            conv_layers.append(nn.LeakyReLU(0.1))
             conv_layers.append(
-                nn.MaxPool1d(
+                mynn.MaxPool1dSame(
                     kernel_size=pool_kernels[i], stride=pool_strides[i]
                 )
             )
             conv_layers.append(nn.Dropout(MODEL_PARAMS["dropout"]))
+
         conv_layers.append(
             nn.Conv1d(
                 channels[-2],
@@ -73,7 +76,7 @@ class WhistleNet(Classifier):
                 device=device,
             )
         )
-        conv_layers.append(nn.ELU())
+        conv_layers.append(nn.Sigmoid())
         self.conv = nn.Sequential(*conv_layers)
 
         # Fully Connected layers
@@ -88,6 +91,10 @@ class WhistleNet(Classifier):
     @property
     def loss_function(self):
         return nn.CrossEntropyLoss()
+
+    @property
+    def example_input(self):
+        return (torch.randn(1, 1, 513),)
 
     def forward(self, x):
         """
