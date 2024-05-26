@@ -6,6 +6,7 @@ from matplotlib import pyplot as plt
 from sklearn.metrics import classification_report
 from torch import nn
 
+from core.dataset import Dataset
 from core.utils import Parameters, project_root
 
 projroot = project_root()
@@ -26,9 +27,12 @@ class Model(nn.Module, Parameters, ABC):
     def forward(self, X) -> torch.Tensor:
         pass
 
+    def __call__(self, X):
+        return self.forward(X)
+
     @property
     @abstractmethod
-    def example_input(self) -> tuple:
+    def example_input(self) -> tuple[torch.Tensor]:
         pass
 
     def save(self) -> None:
@@ -68,23 +72,23 @@ class Classifier(Model):
         self.save_parameters()  # saves as class fields the parameters of the constructor
 
     def training_step(self, batch) -> float:  # forward propagation
-        inputs = (
+        inputs: torch.Tensor = (
             batch[:-1][0].type(torch.float).to(self.device)
         )  # one sample on each row -> X.shape = (m, d_in)
-        # inputs = inputs.reshape(-1,1,513) # TODO hardcodato
-        inputs = inputs.reshape(-1, 1, 28, 28)  # TODO hardcodato
+        shape = self.example_input[0].shape
+        inputs = inputs.reshape(-1, *shape[1:])
         labels = batch[-1].type(torch.long)  # labels -> shape = (m)
         logits = self(inputs).squeeze()
         loss = self.loss_function(logits, labels)
         return loss
 
-    def validation_step(self, batch) -> tuple[float, float]:
+    def validation_step(self, batch: torch.Tensor) -> tuple[float, float]:
         with torch.no_grad():
             inputs = (
                 batch[:-1][0].type(torch.float).to(self.device)
             )  # one sample on each row -> X.shape = (m, d_in)
-            # inputs = inputs.reshape(-1,1,513) # TODO hardcodato
-            inputs = inputs.reshape(-1, 1, 28, 28)  # TODO hardcodato
+            shape = self.example_input[0].shape
+            inputs = inputs.reshape(-1, *shape[1:])
             labels = batch[-1].type(torch.long)  # labels -> shape = (m)
             logits = self(inputs).squeeze()
             loss = self.loss_function(logits, labels)
@@ -172,15 +176,15 @@ class Classifier(Model):
         plt.xlabel("epoch")
         plt.show()
 
-    def evaluate(self, data, show=True) -> None:
+    def evaluate(self, data: Dataset, show=True) -> None:
         test_dataloader = data.test_dataloader(len(data.test_data))
         with torch.no_grad():
             for batch in test_dataloader:
                 inputs = (
                     batch[:-1][0].detach().type(torch.float).to(self.device)
                 )  # one sample on each row -> X.shape = (m, d_in)
-                # inputs = inputs.reshape(-1,1,513) # TODO hardcodato
-                inputs = inputs.reshape(-1, 1, 28, 28)  # TODO hardcodato
+                shape = self.example_input[0].shape
+                inputs = inputs.reshape(-1, *shape[1:])
                 labels = batch[-1].detach().type(torch.long).to(self.device)
                 predictions_test = self.predict(inputs)
                 report_test = classification_report(
