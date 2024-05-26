@@ -1,9 +1,10 @@
 import onnx
 import onnxruntime
 import torch
+from onnx.defs import onnx_opset_version
 
-from core import to_numpy
 from core.model import Model
+from core.utils import to_numpy
 
 
 class ONNXModel:
@@ -13,6 +14,7 @@ class ONNXModel:
         self.onnx_program = torch.onnx.dynamo_export(
             torch_model, torch_model.example_input[0]
         )
+
         self.onnx_program.save(self.onnx_path)
         self.ort_session = onnxruntime.InferenceSession(
             self.onnx_path, providers=["CPUExecutionProvider"]
@@ -20,6 +22,8 @@ class ONNXModel:
 
     def load(self) -> onnx.ModelProto:
         onnx_model = onnx.load(f"{self.torch_model.name}.onnx")
+        print(onnx_opset_version())
+        print(onnx_model.opset_import)
         onnx.checker.check_model(onnx_model)
         return onnx_model
 
