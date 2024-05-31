@@ -1,8 +1,8 @@
 # Continuous Convolutional Networks for Audio Detection and Classification
 
 Ingredients
-- We have a one-dimensional vector-valued sequence **x**$: \mathbb{R} \rightarrow \R^{N_{in}}$
-- And a kernel function $\psi: \R \rightarrow \R^{N_{in}}$
+- We have a one-dimensional vector-valued sequence **x**$: \mathbb{R} \rightarrow \mathbb{R}^{N_{in}}$
+- And a kernel function $\psi: \mathbb{R} \rightarrow \mathbb{R}^{N_{in}}$
 - $N_{in}$ is the number of channels of the input sequence
 - $N_{x}$ is the length of the input sequence
 
@@ -13,7 +13,7 @@ Definition of convolution (with $N_{in}=1$)
 
 ## Continuous Kernel Convolution
 
-The convolution operator is viewed as a vector-valued continuous function $\psi: \R \rightarrow \R^{N_{out} \times N_{in}}$, parametrized with a small neural network $MLP^{\psi}$
+The convolution operator is viewed as a vector-valued continuous function $\psi: \mathbb{R} \rightarrow \mathbb{R}^{N_{out} \times N_{in}}$, parametrized with a small neural network $MLP^{\psi}$
   - The input is a time-step of the convolvee
   - The output is the value of the convolutional kernel at that time-step
 
