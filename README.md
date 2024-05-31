@@ -12,10 +12,11 @@ Ingredients
 Definition of convolution (with $N_{in}=1$)
 - $(x * \psi)(t) = \sum\limits_{\tau=-\frac{N_x}{2}}^{\frac{N_x}{2}} x(\tau)\cdot\psi(t-\tau)$
 
+<p align="center">
+  <img src="docs/assets/discrete_conv.png" alt="Alt text" width="300"/>
+</p>
 
-
-
-![alt](docs/assets/discrete_conv.png)
+<!-- ![alt](docs/assets/discrete_conv.png) -->
 
 
 ## Continuous Kernel Convolution
