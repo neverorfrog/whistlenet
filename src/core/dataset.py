@@ -6,7 +6,7 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader, WeightedRandomSampler, random_split
 
-from core.utils import *
+from utils.utils import *
 
 projroot = project_root()
 root = f"{projroot}/data"

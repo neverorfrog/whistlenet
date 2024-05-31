@@ -3,8 +3,8 @@ from torch.utils.data import DataLoader, random_split
 from torchvision import transforms
 from torchvision.datasets import MNIST
 
-from core import project_root
 from core.dataset import Dataset, TensorData
+from utils import project_root
 
 projroot = project_root()
 root = f"{projroot}/data"

@@ -4,8 +4,9 @@ import sys
 import numpy as np
 import torch
 
-from core.audio import Audio
 from core.dataset import Dataset, TensorData
+from utils import project_root
+from utils.audio import Audio
 
 
 class AudioMnistDataset(Dataset):

@@ -4,7 +4,7 @@ import torch
 from onnx.defs import onnx_opset_version
 
 from core.model import Model
-from core.utils import to_numpy
+from utils.utils import to_numpy
 
 
 class ONNXModel:

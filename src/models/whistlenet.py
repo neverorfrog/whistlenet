@@ -1,10 +1,10 @@
 import torch
 import torch.nn as nn
 
-import core.nn as mynn
+from core import MaxPool1dSame
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-from core.model import Classifier
+from core.model import Model
 
 DOMAIN_PARAMS = {"num_classes": 2, "input_channels": 1}
 
@@ -36,9 +36,9 @@ MODEL_PARAMS = {
 }
 
 
-class WhistleNet(Classifier):
-    def __init__(self, name, num_classes, bias=True):
-        super().__init__(name, num_classes, bias=True)
+class WhistleNet(Model):
+    def __init__(self, name) -> None:
+        super().__init__(name)
 
         # Convolutional Layers (take as input the image)
         channels = MODEL_PARAMS["channels"]
@@ -61,7 +61,7 @@ class WhistleNet(Classifier):
             conv_layers.append(nn.BatchNorm1d(channels[i + 1]))
             conv_layers.append(nn.LeakyReLU(0.1))
             conv_layers.append(
-                mynn.MaxPool1dSame(
+                MaxPool1dSame(
                     kernel_size=pool_kernels[i], stride=pool_strides[i]
                 )
             )
@@ -83,7 +83,7 @@ class WhistleNet(Classifier):
         fc_dims = MODEL_PARAMS["fc_dims"]
         fc_layers = []
         for i in range(len(fc_dims) - 1):
-            fc_layers.append(nn.Linear(fc_dims[i], fc_dims[i + 1], bias=bias))
+            fc_layers.append(nn.Linear(fc_dims[i], fc_dims[i + 1], bias=True))
             fc_layers.append(nn.ReLU())
         fc_layers.append(nn.Dropout(MODEL_PARAMS["dropout"]))
         self.fc = nn.Sequential(*fc_layers)

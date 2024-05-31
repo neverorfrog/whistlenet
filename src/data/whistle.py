@@ -7,9 +7,9 @@ from imblearn.over_sampling import SMOTE, KMeansSMOTE
 from imblearn.under_sampling import EditedNearestNeighbours, RandomUnderSampler
 from sklearn.cluster import MiniBatchKMeans
 
-from core import project_root
-from core.audio import Audio
 from core.dataset import Dataset, TensorData
+from utils import project_root
+from utils.audio import Audio
 
 dataroot = f"{project_root()}/data"
 datapath = f"{dataroot}/whistle/raw/train"

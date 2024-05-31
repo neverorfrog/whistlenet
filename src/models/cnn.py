@@ -5,7 +5,7 @@ import torch.nn.init as init
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 from torchvision import transforms
 
-from core.model import Classifier
+from core.model import Model
 
 DOMAIN_PARAMS = {"num_classes": 10, "input_channels": 1}
 
@@ -36,11 +36,10 @@ MODEL_PARAMS = {
 }
 
 
-class CNN(Classifier):
-    def __init__(self, name, num_classes, bias=True) -> None:
-        super().__init__(name, num_classes, bias=True)
+class CNN(Model):
+    def __init__(self, name) -> None:
+        super().__init__(name)
 
-        self.example_args = (torch.randn(1, 1, 28, 28),)
         self.activation = nn.ReLU()
 
         # Convolutional Layers (take as input the image)
@@ -74,7 +73,7 @@ class CNN(Classifier):
         fc_dims = MODEL_PARAMS["fc_dims"]
         fc_layers = []
         for i in range(len(fc_dims) - 1):
-            fc_layers.append(nn.Linear(fc_dims[i], fc_dims[i + 1], bias=bias))
+            fc_layers.append(nn.Linear(fc_dims[i], fc_dims[i + 1], bias=True))
             fc_layers.append(self.activation)
         # fc_layers.append(nn.Dropout(MODEL_PARAMS['dropout']))
         self.fc = nn.Sequential(*fc_layers)
@@ -91,6 +90,10 @@ class CNN(Classifier):
     @property
     def loss_function(self):
         return nn.CrossEntropyLoss()
+
+    @property
+    def example_input(self):
+        return (torch.randn(1, 1, 28, 28),)
 
     def forward(self, x: torch.tensor):
         """

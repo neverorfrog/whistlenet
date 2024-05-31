@@ -3,10 +3,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch import Tensor
 
-from core.model import Classifier
+from core.model import Model
 
 
-class ToyModel(Classifier):
+class ToyModel(Model):
     def __init__(self, name, num_classes, bias=True) -> None:
         super().__init__(name, num_classes, bias)
         self.conv1 = nn.Conv2d(1, 6, 5)

@@ -1,6 +1,8 @@
 import numpy as np
 import torch
 
+from core.model import Model
+
 
 class Trainer:
     """The base class for training classifiers"""
@@ -8,7 +10,14 @@ class Trainer:
     def __init__(self, params: dict):
         self.params = params
 
-    def fit_epoch(self, epoch, model, optim, train_dataloader, val_dataloader):
+    def fit_epoch(
+        self,
+        epoch: int,
+        model: Model,
+        optim: torch.optim,
+        train_dataloader,
+        val_dataloader,
+    ):
         # Training
         model.train()
         for batch in train_dataloader:

@@ -7,10 +7,10 @@ from sklearn.metrics import classification_report
 from torch import nn
 
 from core.dataset import Dataset
-from core.utils import Parameters, project_root
+from utils.utils import Parameters, project_root
 
 projroot = project_root()
-root = f"{projroot}/weights"
+root = f"{projroot}"
 
 
 class Model(nn.Module, Parameters, ABC):
@@ -22,54 +22,37 @@ class Model(nn.Module, Parameters, ABC):
         self.device = torch.device(
             "cuda" if torch.cuda.is_available() else "cpu"
         )
+        self.test_scores = []
+        self.train_scores = []
+        self.val_scores = []
+        self.training_time = 0
 
     @abstractmethod
     def forward(self, X) -> torch.Tensor:
+        """
+        A method to perform the forward pass using the given input data X.
+        """
         pass
 
     def __call__(self, X):
         return self.forward(X)
 
+    def predict(self, inputs) -> torch.Tensor:
+        """
+        A method to make predictions using the input data X.
+        """
+        with torch.no_grad():
+            return (
+                torch.softmax(self(inputs), dim=-1).argmax(axis=-1).squeeze()
+            )  # shape = (m)
+
     @property
     @abstractmethod
-    def example_input(self) -> tuple[torch.Tensor]:
+    def loss_function(self) -> float:
+        """
+        A getter method for the loss function property.
+        """
         pass
-
-    def save(self) -> None:
-        if self.name is None:
-            return  # TODO
-        path = os.path.join("models", self.name)
-        if not os.path.exists(path):
-            os.mkdir(path)
-        torch.save(
-            self.state_dict(), open(os.path.join(path, "model.pt"), "wb")
-        )
-        print("MODEL SAVED!")
-
-    def load(self, name) -> None:
-        if self.name is None:
-            return  # TODO
-        path = os.path.join("models", name)
-        self.load_state_dict(
-            torch.load(open(os.path.join(path, "model.pt"), "rb"))
-        )
-        self.eval()
-        print("MODEL LOADED!")
-
-
-class Classifier(Model):
-    """The base class of models. Not instantiable because forward inference has to be defined by subclasses."""
-
-    def __init__(self, name, num_classes, bias=True) -> None:
-        super().__init__(name)
-        self.device = torch.device(
-            "cuda" if torch.cuda.is_available() else "cpu"
-        )
-        self.test_scores = []
-        self.train_scores = []
-        self.val_scores = []
-        self.training_time = 0
-        self.save_parameters()  # saves as class fields the parameters of the constructor
 
     def training_step(self, batch) -> float:  # forward propagation
         inputs: torch.Tensor = (
@@ -107,30 +90,26 @@ class Classifier(Model):
 
     @property
     @abstractmethod
-    def loss_function(self) -> float:
-        """
-        A getter method for the loss function property.
-        """
+    def example_input(self) -> tuple[torch.Tensor]:
         pass
-
-    @abstractmethod
-    def forward(self, X) -> torch.Tensor:
-        """
-        A method to perform the forward pass using the given input data X.
-        """
-        pass
-
-    def predict(self, inputs) -> torch.Tensor:
-        """
-        A method to make predictions using the input data X.
-        """
-        with torch.no_grad():
-            return (
-                torch.softmax(self(inputs), dim=-1).argmax(axis=-1).squeeze()
-            )  # shape = (m)
 
     def save(self) -> None:
-        path = os.path.join(root, self.name)
+        """
+        Saves the model weights to disk.
+
+        Saves the model weights to disk in the format of a torch.Tensor. The weights are saved in the 'models' directory with the name of the model.
+
+        Parameters:
+        -----------
+        None
+
+        Returns:
+        --------
+        None
+        """
+        if self.name is None:
+            return  # TODO
+        path = os.path.join(root, "models", self.name)
         if not os.path.exists(path):
             os.mkdir(path)
         torch.save(
@@ -153,7 +132,9 @@ class Classifier(Model):
         print("MODEL SAVED!")
 
     def load(self, name) -> None:
-        path = os.path.join(root, name)
+        if self.name is None:
+            return  # TODO
+        path = os.path.join(root, "models", name)
         self.load_state_dict(
             torch.load(open(os.path.join(path, "model.pt"), "rb"))
         )
