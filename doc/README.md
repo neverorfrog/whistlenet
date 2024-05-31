@@ -1,5 +1,8 @@
 # Continuous Convolutional Networks for Audio Detection and Classification
 
+Project for Neural Network course at Sapienza University of Rome.
+This project is about the experimentation of the contributions of 
+
 Ingredients
 - We have a one-dimensional vector-valued sequence **x**$: \mathbb{R} \rightarrow \mathbb{R}^{N_{in}}$
 - And a kernel function $\psi: \mathbb{R} \rightarrow \mathbb{R}^{N_{in}}$
@@ -8,6 +11,8 @@ Ingredients
 
 Definition of convolution (with $N_{in}=1$)
 - $(x * \psi)(t) = \sum\limits_{\tau=-\frac{N_x}{2}}^{\frac{N_x}{2}} x(\tau)\cdot\psi(t-\tau)$
+
+
 
 
 
