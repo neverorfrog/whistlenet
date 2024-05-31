@@ -3,7 +3,7 @@ from omegaconf import OmegaConf
 from torch.nn.utils.parametrizations import weight_norm
 
 import core
-from core.nn.config import ActivationFunction, Linear, Norm
+from core.ckconv.config import ActivationFunction, Linear, Norm
 
 
 class KernelNet(torch.nn.Module):
@@ -34,11 +34,11 @@ class KernelNet(torch.nn.Module):
         # Norm = Norm[config.norm_type]
         # ActivationFunction = ActivationFunction[config.activation_function]
 
-        ActivationFunction = core.nn.Sine
+        ActivationFunction = core.ckconv.Sine
         Linear = (
-            core.nn.Linear1d
+            core.ckconv.Linear1d
         )  # Implements a Linear layer in terms of 1x1 Convolutions.
-        Multiply = core.nn.Multiply  # Multiplies the input by a constant
+        Multiply = core.ckconv.Multiply  # Multiplies the input by a constant
 
         # The input of the network is a vector of relative positions. That is, input_dimension = 1.
         self.kernel_net = torch.nn.Sequential(
@@ -54,5 +54,8 @@ class KernelNet(torch.nn.Module):
             weight_norm(Linear(hidden_channels, out_channels, bias=bias)),
         )
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.kernel_net(x)
+
+    def __call__(self, x: torch.Tensor) -> torch.Tensor:
+        return self.forward(x)

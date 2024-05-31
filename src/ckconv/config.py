@@ -1,7 +1,7 @@
 import torch
 
-from core.nn.expression import Sine, Swish
-from core.nn.linear import Linear1d
+from ckconv.expression import Sine, Swish
+from ckconv.linear import Linear1d
 
 Norm = {
     "BatchNorm": torch.nn.BatchNorm1d,

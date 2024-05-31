@@ -1,6 +1,6 @@
 import torch
 
-from core.nn.kernelnet import KernelNet
+from core.ckconv.kernelnet import KernelNet
 
 
 class CKConv(torch.nn.Module):
@@ -32,15 +32,16 @@ class CKConv(torch.nn.Module):
             "conv_kernel", torch.zeros(in_channels), persistent=False
         )
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
         The forward pass consists of 3 main steps:
 
-        1. The first time the CKConv sees an input, it will check its dimensionality. Based on that,
-           we create a vector of (normalized) relative positions of equal length.
+        1. The very first time the CKConv sees an input, it will check its
+           dimensionality. Based on that, we create a vector of relative
+           positions of equal length.
 
-        2. We now pass the vector of relative positions trhough self.Kernel. This will create the
-           convolutional kernel of the layer on the fly.
+        2. We now pass the vector of relative positions through self.Kernel.
+           This will create the convolutional kernel of the layer on the fly.
 
         3. We then compute the convolution.
 
