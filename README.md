@@ -15,6 +15,8 @@ Definition of convolution (with $N_{in}=1$)
 
 
 
+![alt](docs/assets/discrete_conv.png)
+
 
 ## Continuous Kernel Convolution
 
