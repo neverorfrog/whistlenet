@@ -1,7 +1,7 @@
 # Continuous Convolutional Networks for Audio Detection and Classification
 
 Ingredients
-- We have a one-dimensional vector-valued sequence **x**$: \R \rightarrow \R^{N_{in}}$
+- We have a one-dimensional vector-valued sequence **x**$: \mathbb{R} \rightarrow \R^{N_{in}}$
 - And a kernel function $\psi: \R \rightarrow \R^{N_{in}}$
 - $N_{in}$ is the number of channels of the input sequence
 - $N_{x}$ is the length of the input sequence
