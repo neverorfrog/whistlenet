@@ -1,20 +1,21 @@
 seed: 3
 
 # function stuff
-function: Constant
-min: -4
-max : 4
-samples: 200
+function: Gaussian
+min: -10
+max : 10
+samples: 1000
 gauss_sigma: 1
 gauss_mean: 0
 
 # model stuff
+activation: Sine
 hidden_channels: 32
 n_layers: 3
 weight_dropout: 0.5
-omega_0: 50
+omega_0: 10
 
 # training stuff
-iterations: 2000
-lr: 0.00001
-optim: "Adam"
+iterations: 5000
+lr: 0.001
+optim: Adam

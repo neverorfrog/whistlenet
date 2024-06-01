@@ -8,6 +8,7 @@ def example_function(config):
     function = {
         "Gaussian": _gaussian,
         "Constant": _constant,
+        "Sawtooth": _sawtooth,
     }[config.function]
     return function(config, x)
 
@@ -22,6 +23,14 @@ def _gaussian(config, x):
         * np.exp(-1 / 2.0 * ((x - mean) / sigma) ** 2)
     )
     f = 1 / float(max(f)) * f
+    # return
+    return f
+
+
+def _sawtooth(config, x):
+    # apply function
+    f = np.ones_like(x)
+    f[::2] = 0.0
     # return
     return f
 

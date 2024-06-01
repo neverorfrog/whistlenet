@@ -1,22 +1,9 @@
 import torch
+from omegaconf import OmegaConf
 from torch.nn.utils.parametrizations import weight_norm
 
 from ckconv.expression import Multiply, Sine, Swish
 from ckconv.linear import Linear1d
-
-Norm = {
-    "BatchNorm": torch.nn.BatchNorm1d,
-    "": torch.nn.Identity,
-}
-
-ActivationFunction = {
-    "ReLU": torch.nn.ReLU,
-    "LeakyReLU": torch.nn.LeakyReLU,
-    "Swish": Swish,
-    "Sine": Sine,
-}
-
-Linear = {1: Linear1d}
 
 
 class KernelNet(torch.nn.Module):
@@ -26,6 +13,7 @@ class KernelNet(torch.nn.Module):
         hidden_channels: int,
         bias: bool,
         omega_0: float,
+        config: OmegaConf,
     ):
         """
         Creates an 3-layer MLP that parameterizes a convolutional kernel as:
@@ -33,7 +21,7 @@ class KernelNet(torch.nn.Module):
         relative position (1) -> hidden_channels (32) -> hidden_channels (32) -> out_channels (1) * in_channels (1)
 
         :param out_channels: output channels of the resulting convolutional kernel.
-        :param hidden_channels: Number of hidden units per hidden layer.
+        :param hidden_channels: NActivationFunctionumber of hidden units per hidden layer.
         :param n_layers: Number of layers.
         :param activation_function: Activation function used.
         :param norm_type: Normalization type used.
@@ -45,9 +33,12 @@ class KernelNet(torch.nn.Module):
         # Linear = Linear[config.linear_type]
         # dim_linear = config.dim_linear
         # Norm = Norm[config.norm_type]
-        # ActivationFunction = ActivationFunction[config.activation_function]
-
-        Activation = Sine
+        Activation = {
+            "ReLU": torch.nn.ReLU,
+            "LeakyReLU": torch.nn.LeakyReLU,
+            "Swish": Swish,
+            "Sine": Sine,
+        }[config.activation]
         Linear = (
             Linear1d  # Implements a Linear layer in terms of 1x1 Convolutions.
         )
