@@ -1,9 +1,22 @@
 import torch
-from omegaconf import OmegaConf
 from torch.nn.utils.parametrizations import weight_norm
 
-import core
-from core.ckconv.config import ActivationFunction, Linear, Norm
+from ckconv.expression import Multiply, Sine, Swish
+from ckconv.linear import Linear1d
+
+Norm = {
+    "BatchNorm": torch.nn.BatchNorm1d,
+    "": torch.nn.Identity,
+}
+
+ActivationFunction = {
+    "ReLU": torch.nn.ReLU,
+    "LeakyReLU": torch.nn.LeakyReLU,
+    "Swish": Swish,
+    "Sine": Sine,
+}
+
+Linear = {1: Linear1d}
 
 
 class KernelNet(torch.nn.Module):
@@ -15,9 +28,9 @@ class KernelNet(torch.nn.Module):
         omega_0: float,
     ):
         """
-        Creates an 3-layer MLP, which parameterizes a convolutional kernel as:
+        Creates an 3-layer MLP that parameterizes a convolutional kernel as:
 
-        relative position -> hidden_channels -> hidden_channels -> in_channels * out_channels
+        relative position (1) -> hidden_channels (32) -> hidden_channels (32) -> out_channels (1) * in_channels (1)
 
         :param out_channels: output channels of the resulting convolutional kernel.
         :param hidden_channels: Number of hidden units per hidden layer.
@@ -34,22 +47,22 @@ class KernelNet(torch.nn.Module):
         # Norm = Norm[config.norm_type]
         # ActivationFunction = ActivationFunction[config.activation_function]
 
-        ActivationFunction = core.ckconv.Sine
+        Activation = Sine
         Linear = (
-            core.ckconv.Linear1d
-        )  # Implements a Linear layer in terms of 1x1 Convolutions.
-        Multiply = core.ckconv.Multiply  # Multiplies the input by a constant
+            Linear1d  # Implements a Linear layer in terms of 1x1 Convolutions.
+        )
+        Mul = Multiply  # Multiplies the input by a constant
 
-        # The input of the network is a vector of relative positions. That is, input_dimension = 1.
+        # The input of the network is a vector of relative positions and so input_dim = 1
         self.kernel_net = torch.nn.Sequential(
             # 1st layer
             weight_norm(Linear(1, hidden_channels, bias=bias)),
-            Multiply(omega_0),
-            ActivationFunction(),
+            Mul(omega_0),
+            Activation(),
             # 2nd Layer
             weight_norm(Linear(hidden_channels, hidden_channels, bias=bias)),
-            Multiply(omega_0),
-            ActivationFunction(),
+            Mul(omega_0),
+            Activation(),
             # 3rd Layer
             weight_norm(Linear(hidden_channels, out_channels, bias=bias)),
         )
