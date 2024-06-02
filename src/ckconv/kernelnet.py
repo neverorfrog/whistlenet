@@ -2,8 +2,8 @@ import torch
 from omegaconf import OmegaConf
 from torch.nn.utils.parametrizations import weight_norm
 
+from ckconv.customlayers import Linear1d
 from ckconv.expression import Multiply, Sine, Swish
-from ckconv.linear import Linear1d
 
 
 class KernelNet(torch.nn.Module):
@@ -11,22 +11,24 @@ class KernelNet(torch.nn.Module):
         self,
         out_channels: int,
         hidden_channels: int,
+        activation: str,
         bias: bool,
         omega_0: float,
-        config: OmegaConf,
     ):
         """
         Creates an 3-layer MLP that parameterizes a convolutional kernel as:
 
         relative position (1) -> hidden_channels (32) -> hidden_channels (32) -> out_channels (1) * in_channels (1)
 
-        :param out_channels: output channels of the resulting convolutional kernel.
-        :param hidden_channels: NActivationFunctionumber of hidden units per hidden layer.
-        :param n_layers: Number of layers.
-        :param activation_function: Activation function used.
-        :param norm_type: Normalization type used.
-        :param bias:  If True, adds a learnable bias to the layers.
-        :param weight_dropout: Dropout rate applied to the sampled convolutional kernel.
+        Args:
+            out_channels (int): The number of output channels.
+            hidden_channels (int): The number of hidden channels.
+            activation (str): The activation function to use.
+            bias (bool): If True, adds a bias term to the convolution.
+            omega_0 (float): The initial value of the kernel..
+
+        Returns:
+            torch.nn.Module: The created 3-layer MLP.
         """
         super().__init__()
 
@@ -38,7 +40,7 @@ class KernelNet(torch.nn.Module):
             "LeakyReLU": torch.nn.LeakyReLU,
             "Swish": Swish,
             "Sine": Sine,
-        }[config.activation]
+        }[activation]
         Linear = (
             Linear1d  # Implements a Linear layer in terms of 1x1 Convolutions.
         )

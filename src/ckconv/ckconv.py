@@ -1,27 +1,38 @@
-import torch
+from typing import Optional, Tuple
 
-from core.ckconv.kernelnet import KernelNet
+import torch
+import torch.nn.functional as f
+from omegaconf import OmegaConf
+
+from ckconv.kernelnet import KernelNet
+
+
+def causal_padding(
+    x: torch.Tensor,
+    kernel: torch.Tensor,
+) -> Tuple[torch.Tensor, torch.Tensor]:
+    # 1. Pad the input signal & kernel tensors.
+    # Check if sizes are odd. If not, add a pad of zero to make them odd.
+    if kernel.shape[-1] % 2 == 0:
+        kernel = f.pad(kernel, (1, 0), value=0.0)
+    # 2. Perform padding on the input so that output equals input in length
+    x = f.pad(x, (kernel.shape[-1] - 1, 0), value=0.0)
+    return x, kernel
 
 
 class CKConv(torch.nn.Module):
-    def __init__(
-        self,
-        in_channels: int,
-        out_channels: int,
-        hidden_channels: int,
-        bias: bool,
-        omega_0: float,
-    ):
+    def __init__(self, in_channels: int, out_channels: int, config: OmegaConf):
         super().__init__()
 
         self.Kernel = KernelNet(
             out_channels * in_channels,
-            hidden_channels,
-            bias,
-            omega_0,
+            config.kernel_hidden_channels,
+            config.kernel_activation,
+            config.bias,
+            config.omega_0,
         )
 
-        if bias:
+        if config.bias:
             self.bias = torch.nn.Parameter(torch.Tensor(out_channels))
             self.bias.data.fill_(value=0.0)
         else:
@@ -56,9 +67,10 @@ class CKConv(torch.nn.Module):
         self.conv_kernel = conv_kernel
 
         # Compute the convolution (Step 3)
-        return torch.nn.functional.conv1d(x, conv_kernel, self.bias, padding=0)
+        x, kernel = causal_padding(x, conv_kernel)
+        return torch.nn.functional.conv1d(x, kernel, self.bias, padding=0)
 
-    def handle_rel_positions(self, x):
+    def handle_rel_positions(self, x: torch.Tensor) -> torch.Tensor:
         """
         Responsible for generating the relative positions of the input, given
         its dimensionality.
@@ -71,12 +83,15 @@ class CKConv(torch.nn.Module):
         Returns
         -------
         rel_pos : torch.tensor
-            The relative positions of the input.
+            The relative positions of the input of form (batch_size=1,
+            in_channels=1, x_dimension=x.shape[-1]). This means there are Nx
+            relative positions (where Nx is the length of the input) between -1
+            and 1.
         """
         if self.rel_positions is None:
             self.rel_positions = (
                 torch.linspace(-1.0, 1.0, x.shape[-1])
                 .unsqueeze(0)
                 .unsqueeze(0)
-            )  # -> Of form (batch_size=1, in_channels=1, x_dimension=x.shape[-1])
+            )
         return self.rel_positions
