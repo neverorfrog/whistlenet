@@ -1,0 +1,20 @@
+seed: 3
+
+# kernelnet stuff
+kernel_activation: Sine
+kernel_hidden_channels: 32
+kernel_layers: 3
+kernel_dropout: 0.5
+kernel_norm_type: boh
+omega_0: 50
+
+# model stuff
+num_blocks: 2
+hidden_channels: 20
+bias: True
+dropout: 0.5
+
+# training stuff
+iterations: 15000
+lr: 0.00001
+optim: Adam
