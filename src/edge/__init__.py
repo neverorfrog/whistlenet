@@ -1,2 +1,2 @@
-from .executorchmodel import ExecutorchModel
+# from .executorchmodel import ExecutorchModel
 from .onnxmodel import ONNXModel

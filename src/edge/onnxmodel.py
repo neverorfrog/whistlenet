@@ -12,9 +12,9 @@ class ONNXModel:
         self.onnx_path = f"{torch_model.name}.onnx"
         self.torch_model = torch_model
         self.onnx_program = torch.onnx.dynamo_export(
-            torch_model, torch_model.example_input[0]
+            torch_model,
+            torch_model.example_input[0],
         )
-
         self.onnx_program.save(self.onnx_path)
         self.ort_session = onnxruntime.InferenceSession(
             self.onnx_path, providers=["CPUExecutionProvider"]

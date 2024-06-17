@@ -1,7 +1,8 @@
 import torch
 from omegaconf import OmegaConf
 
-from ckconv import CKConv, LayerNorm, Linear1d
+from ckconv.ckconv import CKConv
+from ckconv.customlayers import LayerNorm, Linear1d
 
 
 class CKBlock(torch.nn.Module):
@@ -40,7 +41,6 @@ class CKBlock(torch.nn.Module):
         super().__init__()
 
         self.conv1 = CKConv(in_channels, out_channels, config)
-
         self.conv2 = CKConv(out_channels, out_channels, config)
 
         # Normalization layers
@@ -48,7 +48,9 @@ class CKBlock(torch.nn.Module):
         self.norm2 = LayerNorm(out_channels)
 
         # Dropout layer
-        self.dropout: torch.nn.Module = torch.nn.Dropout(p=config.dropout)
+        self.dropout: torch.nn.Module = torch.nn.Dropout(
+            p=config.network.dropout
+        )
 
         # Residual connection
         shortcut = []

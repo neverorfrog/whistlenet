@@ -26,13 +26,13 @@ class CKConv(torch.nn.Module):
 
         self.Kernel = KernelNet(
             out_channels * in_channels,
-            config.kernel_hidden_channels,
-            config.kernel_activation,
-            config.bias,
-            config.omega_0,
+            config.kernel.hidden_channels,
+            config.kernel.activation,
+            config.kernel.bias,
+            config.kernel.omega_0,
         )
 
-        if config.bias:
+        if config.kernel.bias:
             self.bias = torch.nn.Parameter(torch.Tensor(out_channels))
             self.bias.data.fill_(value=0.0)
         else:

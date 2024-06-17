@@ -15,6 +15,12 @@ dataroot = f"{project_root()}/data"
 datapath = f"{dataroot}/whistle/raw/train"
 labelpath = f"{dataroot}/whistle/labels"
 
+DATA_PARAMS = {
+    "val_split_size": 0.15,
+    "class_weights": [1, 30],
+    "resample": True,
+}
+
 
 class WhistleDataset(Dataset):
     """The Whistle dataset"""
@@ -59,7 +65,7 @@ class WhistleDataset(Dataset):
             batch_size=4096,
             random_state=42,
         )
-        kmsm = KMeansSMOTE(
+        over = KMeansSMOTE(
             sampling_strategy="minority",
             random_state=42,
             k_neighbors=2,
@@ -68,22 +74,17 @@ class WhistleDataset(Dataset):
             cluster_balance_threshold="auto",
             density_exponent="auto",
         )
-        # over = SMOTE(random_state=42)
-        # under = EditedNearestNeighbours()
+        # under = EditedNearestNeighbours(n_jobs=-1)
         # combined = SMOTEENN(random_state=42, smote=over, enn=under)
-        X_res, y_res = kmsm.fit_resample(X_res, y_res)
+        X_res, y_res = over.fit_resample(X_res, y_res)
         train_data = TensorData(data=X_res, labels=y_res)
         return train_data
 
     def _get_data(self) -> tuple:
         data = []
         labels = []
-        j = 0
-        for filename in os.listdir(labelpath):
-            j = j + 1
-            if j == 50:
-                break
-            name, extension = os.path.splitext(filename)
+        for j, filename in enumerate(os.listdir(labelpath)):
+            name, _ = os.path.splitext(filename)
             audio = Audio(name, datapath=datapath, labelpath=labelpath)
             audio_labels = audio.get_labels()
             for i in range(audio.S.shape[1]):
