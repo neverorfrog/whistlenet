@@ -11,3 +11,4 @@ __pycache__
 *.pyc
 src/*/build
 src/tests/*/build
+.ipynb_checkpoints
