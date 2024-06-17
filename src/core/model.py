@@ -58,8 +58,9 @@ class Model(nn.Module, Parameters, ABC):
         inputs: torch.Tensor = (
             batch[:-1][0].type(torch.float).to(self.device)
         )  # one sample on each row -> X.shape = (m, d_in)
-        shape = self.example_input[0].shape
-        inputs = inputs.reshape(-1, *shape[1:])
+        # shape = self.example_input[0].shape
+        # inputs = inputs.reshape(-1, *shape[1:])
+        inputs = inputs.view(-1, 1, 513)
         labels = batch[-1].type(torch.long)  # labels -> shape = (m)
         logits = self(inputs).squeeze()
         loss = self.loss_function(logits, labels)
@@ -70,8 +71,9 @@ class Model(nn.Module, Parameters, ABC):
             inputs = (
                 batch[:-1][0].type(torch.float).to(self.device)
             )  # one sample on each row -> X.shape = (m, d_in)
-            shape = self.example_input[0].shape
-            inputs = inputs.reshape(-1, *shape[1:])
+            # shape = self.example_input[0].shape
+            # inputs = inputs.reshape(-1, *shape[1:])
+            inputs = inputs.view(-1, 1, 513)
             labels = batch[-1].type(torch.long)  # labels -> shape = (m)
             logits = self(inputs).squeeze()
             loss = self.loss_function(logits, labels)
@@ -164,8 +166,9 @@ class Model(nn.Module, Parameters, ABC):
                 inputs = (
                     batch[:-1][0].detach().type(torch.float).to(self.device)
                 )  # one sample on each row -> X.shape = (m, d_in)
-                shape = self.example_input[0].shape
-                inputs = inputs.reshape(-1, *shape[1:])
+                # shape = self.example_input[0].shape
+                # inputs = inputs.reshape(-1, *shape[1:])
+                inputs = inputs.view(-1, 1, 513)
                 labels = batch[-1].detach().type(torch.long).to(self.device)
                 predictions_test = self.predict(inputs)
                 report_test = classification_report(
