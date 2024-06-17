@@ -7,15 +7,15 @@ from core.model import Model
 
 
 class ToyModel(Model):
-    def __init__(self, name, num_classes, bias=True) -> None:
-        super().__init__(name, num_classes, bias)
+    def __init__(self, name) -> None:
+        super().__init__(name)
         self.conv1 = nn.Conv2d(1, 6, 5)
         self.maxpool1 = nn.MaxPool2d(2, 2)
         self.conv2 = nn.Conv2d(6, 16, 5)
         self.maxpool2 = nn.MaxPool2d(2)
         self.fc1 = nn.Linear(256, 120)
         self.fc2 = nn.Linear(120, 84)
-        self.fc3 = nn.Linear(84, num_classes)
+        self.fc3 = nn.Linear(84, 10)
 
     @property
     def loss_function(self):

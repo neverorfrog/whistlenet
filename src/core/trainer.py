@@ -1,5 +1,6 @@
 import numpy as np
 import torch
+from tqdm import tqdm
 
 from core.model import Model
 
@@ -20,14 +21,15 @@ class Trainer:
     ):
         # Training
         model.train()
-        for batch in train_dataloader:
-            # Forward propagation
-            loss = model.training_step(batch)
-            # Backward Propagation
-            optim.zero_grad()
-            with torch.no_grad():
-                loss.backward()  # here we calculate the chained derivatives (every parameters will have .grad changed)
-                optim.step()
+        with tqdm(train_dataloader) as pbar:
+            for batch in pbar:
+                # Forward propagation
+                loss = model.training_step(batch)
+                # Backward Propagation
+                optim.zero_grad()
+                with torch.no_grad():
+                    loss.backward()  # here we calculate the chained derivatives (every parameters will have .grad changed)
+                    optim.step()
 
         # Validation
         model.eval()
