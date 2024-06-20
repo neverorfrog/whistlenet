@@ -32,7 +32,7 @@ class CCNN(Model):
 
     @property
     def example_input(self):
-        pass
+        return (torch.randn(1, 1, 513),)  # hardcodato
 
     @property
     def loss_function(self):

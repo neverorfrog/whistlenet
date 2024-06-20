@@ -1,23 +1,9 @@
-from typing import Optional, Tuple
-
 import torch
-import torch.nn.functional as f
 from omegaconf import OmegaConf
 
+from ckconv.customlayers import CausalConv1d
 from ckconv.kernelnet import KernelNet
-
-
-def causal_padding(
-    x: torch.Tensor,
-    kernel: torch.Tensor,
-) -> Tuple[torch.Tensor, torch.Tensor]:
-    # 1. Pad the input signal & kernel tensors.
-    # Check if sizes are odd. If not, add a pad of zero to make them odd.
-    if kernel.shape[-1] % 2 == 0:
-        kernel = f.pad(kernel, (1, 0), value=0.0)
-    # 2. Perform padding on the input so that output equals input in length
-    x = f.pad(x, (kernel.shape[-1] - 1, 0), value=0.0)
-    return x, kernel
+from ckconv.util import causal_fftconv, causal_padding
 
 
 class CKConv(torch.nn.Module):
@@ -67,8 +53,9 @@ class CKConv(torch.nn.Module):
         self.conv_kernel = conv_kernel
 
         # Compute the convolution (Step 3)
-        x, kernel = causal_padding(x, conv_kernel)
-        return torch.nn.functional.conv1d(x, kernel, self.bias, padding=0)
+        # x, kernel = causal_padding(x, conv_kernel)
+        # return torch.nn.functional.conv1d(x, kernel, self.bias, padding=0)
+        return causal_fftconv(x, conv_kernel, self.bias)
 
     def handle_rel_positions(self, x: torch.Tensor) -> torch.Tensor:
         """

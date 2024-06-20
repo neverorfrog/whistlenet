@@ -2,19 +2,19 @@ seed: 3
 
 network:
   name: boh
-  num_blocks: 2
-  hidden_channels: 5
+  num_blocks: 1
+  hidden_channels: 2
   bias: True
   dropout: 0.5
 
 # kernelnet stuff
 kernel:
   activation: Sine
-  hidden_channels: 32
+  hidden_channels: 20
   num_layers: 3
   dropout: 0.5
   norm_type: boh
-  omega_0: 37
+  omega_0: 80
   bias: True
 
 # training stuff
