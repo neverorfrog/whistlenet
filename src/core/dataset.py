@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 import torch
+from omegaconf import OmegaConf
 from torch.utils.data import DataLoader, WeightedRandomSampler, random_split
 
 from utils.utils import *
@@ -23,9 +24,7 @@ class Dataset(Parameters, ABC):
 
     def __init__(
         self,
-        tobeloaded: bool,
-        params: dict,
-        name=None,
+        config: OmegaConf,
         train_data=None,
         test_data=None,
         val_data=None,
@@ -33,10 +32,9 @@ class Dataset(Parameters, ABC):
         self.train_data = train_data
         self.val_data = val_data
         self.test_data = test_data
-        self.name = name
+        self.name = config.dataset.name
         path = os.path.join(root, self.name)
-        self.load(path) if tobeloaded else self.save(path)
-        self.params = params
+        self.load(path) if config.dataset.load_data else self.save(path)
 
     def train_dataloader(self, batch_size):
         """
@@ -131,7 +129,8 @@ class Dataset(Parameters, ABC):
     def save(self, path=None):
         if path is None:
             return
-        # path = os.path.join("data",self.name)
+        if not os.path.exists(path):
+            os.makedirs(path)
         torch.save(
             self.train_data, open(os.path.join(path, "train_data.dat"), "wb")
         )
@@ -144,7 +143,6 @@ class Dataset(Parameters, ABC):
         print("DATA SAVED!")
 
     def load(self, path=None):
-        # path = os.path.join("data",self.name)
         self.train_data = torch.load(
             open(os.path.join(path, "train_data.dat"), "rb")
         )

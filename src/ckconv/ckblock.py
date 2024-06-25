@@ -49,7 +49,7 @@ class CKBlock(torch.nn.Module):
 
         # Dropout layer
         self.dropout: torch.nn.Module = torch.nn.Dropout(
-            p=config.network.dropout
+            p=config.model.dropout
         )
 
         # Residual connection

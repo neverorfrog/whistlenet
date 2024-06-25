@@ -1,13 +1,14 @@
 import onnx
 import onnxruntime
 import torch
+from omegaconf import OmegaConf
 from onnx.defs import onnx_opset_version
 
 from core.model import Model
 from utils.utils import to_numpy
 
 
-class ONNXModel:
+class ONNXDynamo:
     def __init__(self, torch_model: Model):
         self.onnx_path = f"{torch_model.name}.onnx"
         self.torch_model = torch_model

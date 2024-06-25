@@ -1,8 +1,11 @@
 import os
 from abc import ABC, abstractmethod
 
+import pandas as pd
 import torch
+from IPython.display import display
 from matplotlib import pyplot as plt
+from omegaconf import OmegaConf
 from sklearn.metrics import classification_report
 from torch import nn
 
@@ -16,9 +19,10 @@ root = f"{projroot}"
 class Model(nn.Module, Parameters, ABC):
     """The base class of models"""
 
-    def __init__(self, name: str = None) -> None:
+    def __init__(self, config: OmegaConf) -> None:
         super(Model, self).__init__()
-        self.name = name
+        self.name = config.model.name
+        self.config = config
         self.device = torch.device(
             "cuda" if torch.cuda.is_available() else "cpu"
         )
@@ -87,7 +91,7 @@ class Model(nn.Module, Parameters, ABC):
             report = classification_report(
                 batch[-1], predictions, output_dict=True
             )
-            score = report["weighted avg"]["f1-score"]
+            score = report["weighted avg"]["recall"]
         return loss, score
 
     @property
@@ -109,8 +113,6 @@ class Model(nn.Module, Parameters, ABC):
         --------
         None
         """
-        if self.name is None:
-            return  # TODO
         path = os.path.join(root, "models", self.name)
         if not os.path.exists(path):
             os.mkdir(path)
@@ -133,10 +135,8 @@ class Model(nn.Module, Parameters, ABC):
         )
         print("MODEL SAVED!")
 
-    def load(self, name) -> None:
-        if self.name is None:
-            return  # TODO
-        path = os.path.join(root, "models", name)
+    def load(self) -> None:
+        path = os.path.join(root, "models", self.name)
         self.load_state_dict(
             torch.load(open(os.path.join(path, "model.pt"), "rb"))
         )
@@ -175,7 +175,8 @@ class Model(nn.Module, Parameters, ABC):
                     labels, predictions_test, digits=3, output_dict=True
                 )
                 if show:
-                    print(report_test)
+                    report_df = pd.DataFrame(report_test).transpose()
+                    display(report_df)
                 self.test_scores.append(
                     report_test["accuracy"]
                 )  # TODO hardcodato

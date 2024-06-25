@@ -18,3 +18,4 @@ imbalanced-learn
 pykan
 tqdm
 pytest
+pandas

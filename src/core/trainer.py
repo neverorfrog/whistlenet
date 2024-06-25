@@ -1,5 +1,6 @@
 import numpy as np
 import torch
+from omegaconf import OmegaConf
 from tqdm import tqdm
 
 from core.model import Model
@@ -8,8 +9,8 @@ from core.model import Model
 class Trainer:
     """The base class for training classifiers"""
 
-    def __init__(self, params: dict):
-        self.params = params
+    def __init__(self, config: OmegaConf):
+        self.config = config
 
     def fit_epoch(
         self,
@@ -65,26 +66,25 @@ class Trainer:
     # That is the effective training cycle in which the epochs pass by
     def fit(self, model, data):
         # stuff for dataset
-        self.batch_size = self.params["batch_size"]
+        self.batch_size = self.config.training.batch_size
         train_dataloader = data.train_dataloader(self.batch_size)
         val_dataloader = data.val_dataloader(self.batch_size)
 
         # stuff for early stopping
-        self.patience = self.params["patience"]
+        self.patience = self.config.training.patience
         self.worse_epochs = 0
         self.best_score = 0
         self.best_loss = np.inf
 
-        self.lr = self.params["learning_rate"]
-        optim = self.params["optim_function"](
+        optim = getattr(torch.optim, self.config.training.optim)(
             model.parameters(),
-            lr=self.lr,
-            weight_decay=self.params["weight_decay"],
+            lr=self.config.training.lr,
+            weight_decay=self.config.training.weight_decay,
         )
 
         model.test_scores = []
         model.train_scores = []
-        max_epochs = self.params["max_epochs"]
+        max_epochs = self.config.training.epochs
         for epoch in range(1, max_epochs + 1):
             finished = self.fit_epoch(
                 epoch, model, optim, train_dataloader, val_dataloader

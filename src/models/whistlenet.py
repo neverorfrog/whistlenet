@@ -2,22 +2,10 @@ import torch
 import torch.nn as nn
 
 from core import MaxPool1dSame
+from utils.focal import FocalLoss
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 from core.model import Model
-
-DOMAIN_PARAMS = {"num_classes": 2, "input_channels": 1}
-
-TRAIN_PARAMS = {
-    "max_epochs": 30,
-    "learning_rate": 0.0001,
-    "batch_size": 64,
-    "patience": 10,
-    "metrics": "f1-score",
-    "optim_function": torch.optim.RAdam,
-    "weight_decay": 0.0001,
-    "loss_function": nn.NLLLoss(),
-}
 
 MODEL_PARAMS = {
     "channels": [1, 32, 64, 128, 64],
@@ -26,13 +14,12 @@ MODEL_PARAMS = {
     "pool_kernels": [2, 2, 2, 2],
     "pool_strides": [1, 1, 1, 1],
     "fc_dims": [3520, 2],
-    "dropout": 0.5,
 }
 
 
 class WhistleNet(Model):
-    def __init__(self, name) -> None:
-        super().__init__(name)
+    def __init__(self, config) -> None:
+        super().__init__(config)
 
         # Convolutional Layers (take as input the image)
         channels = MODEL_PARAMS["channels"]
@@ -59,7 +46,7 @@ class WhistleNet(Model):
                     kernel_size=pool_kernels[i], stride=pool_strides[i]
                 )
             )
-            conv_layers.append(nn.Dropout(MODEL_PARAMS["dropout"]))
+            conv_layers.append(nn.Dropout(config.model.dropout))
 
         conv_layers.append(
             nn.Conv1d(
@@ -79,12 +66,12 @@ class WhistleNet(Model):
         for i in range(len(fc_dims) - 1):
             fc_layers.append(nn.Linear(fc_dims[i], fc_dims[i + 1], bias=True))
             fc_layers.append(nn.ReLU())
-        fc_layers.append(nn.Dropout(MODEL_PARAMS["dropout"]))
+        fc_layers.append(nn.Dropout(config.model.dropout))
         self.fc = nn.Sequential(*fc_layers)
 
     @property
     def loss_function(self):
-        return nn.CrossEntropyLoss()
+        return FocalLoss()
 
     @property
     def example_input(self):

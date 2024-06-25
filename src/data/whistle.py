@@ -5,6 +5,7 @@ import torch
 from imblearn.combine import SMOTEENN
 from imblearn.over_sampling import SMOTE, KMeansSMOTE
 from imblearn.under_sampling import EditedNearestNeighbours, RandomUnderSampler
+from omegaconf import OmegaConf
 from sklearn.cluster import MiniBatchKMeans
 
 from core.dataset import Dataset, TensorData
@@ -15,22 +16,14 @@ dataroot = f"{project_root()}/data"
 datapath = f"{dataroot}/whistle/raw/train"
 labelpath = f"{dataroot}/whistle/labels"
 
-DATA_PARAMS = {
-    "val_split_size": 0.15,
-    "class_weights": [1, 30],
-    "resample": True,
-}
-
 
 class WhistleDataset(Dataset):
     """The Whistle dataset"""
 
-    def __init__(
-        self, tobeloaded: bool, params: dict, name=None, batch_size=64
-    ):
+    def __init__(self, config: OmegaConf, batch_size=64):
         self.save_parameters()
         self.classes = [0, 1]
-        if not tobeloaded:
+        if not config.dataset.load_data:
             data, labels = self._get_data()
             train_data, train_labels, test_data, test_labels = self.split(
                 data, labels, 0.2
@@ -42,22 +35,22 @@ class WhistleDataset(Dataset):
             test_data = TensorData(test_data, test_labels)
             val_data = TensorData(val_data, val_labels)
 
-            if self.params["resample"]:
+            if config.dataset.resample:
                 train_data = self.resample(train_data)
             super().__init__(
-                tobeloaded,
-                params,
-                name=name,
+                config=config,
                 train_data=train_data,
                 test_data=test_data,
                 val_data=val_data,
             )
         else:
-            super().__init__(tobeloaded, params, name=name)
+            super().__init__(config=config)
 
     def resample(self, train_data):
         X_res = train_data.data.squeeze(1)
         y_res = train_data.labels
+        under = RandomUnderSampler(sampling_strategy=0.2)
+        X_res, y_res = under.fit_resample(X_res, y_res)
         kmeans = MiniBatchKMeans(
             n_clusters=32,
             init="k-means++",
@@ -74,8 +67,6 @@ class WhistleDataset(Dataset):
             cluster_balance_threshold="auto",
             density_exponent="auto",
         )
-        # under = EditedNearestNeighbours(n_jobs=-1)
-        # combined = SMOTEENN(random_state=42, smote=over, enn=under)
         X_res, y_res = over.fit_resample(X_res, y_res)
         train_data = TensorData(data=X_res, labels=y_res)
         return train_data
