@@ -1,6 +1,7 @@
 import os
 from abc import ABC, abstractmethod
 
+import numpy as np
 import pandas as pd
 import torch
 from IPython.display import display
@@ -58,41 +59,33 @@ class Model(nn.Module, Parameters, ABC):
         """
         pass
 
-    def training_step(self, batch) -> float:  # forward propagation
+    def inference(self, batch: torch.Tensor) -> torch.Tensor:
         inputs: torch.Tensor = (
             batch[:-1][0].type(torch.float).to(self.device)
         )  # one sample on each row -> X.shape = (m, d_in)
-        # shape = self.example_input[0].shape
-        # inputs = inputs.reshape(-1, *shape[1:])
-        inputs = inputs.view(-1, 1, 513)
-        labels = batch[-1].type(torch.long)  # labels -> shape = (m)
-        logits = self(inputs).squeeze()
-        loss = self.loss_function(logits, labels)
+        shape = self.example_input[0].shape
+        inputs = inputs.view(-1, *shape[1:])
+        predictions = self(inputs)
+        return predictions
+
+    def training_step(self, batch: torch.Tensor) -> float:
+        predictions = self.inference(batch)
+        labels = batch[-1].view(predictions.shape)
+        loss = self.loss_function(predictions, labels)
         return loss
 
     def validation_step(self, batch: torch.Tensor) -> tuple[float, float]:
         with torch.no_grad():
-            inputs = (
-                batch[:-1][0].type(torch.float).to(self.device)
-            )  # one sample on each row -> X.shape = (m, d_in)
-            # shape = self.example_input[0].shape
-            # inputs = inputs.reshape(-1, *shape[1:])
-            inputs = inputs.view(-1, 1, 513)
-            labels = batch[-1].type(torch.long)  # labels -> shape = (m)
-            logits = self(inputs).squeeze()
-            loss = self.loss_function(logits, labels)
-            predictions = (
-                logits.argmax(axis=1)
-                .squeeze()
-                .detach()
-                .type(torch.long)
-                .to(self.device)
-            )  # the most probable class is the one with highest probability
-            report = classification_report(
-                batch[-1], predictions, output_dict=True
-            )
-            score = report["weighted avg"]["recall"]
-        return loss, score
+            predictions = self.inference(batch)
+            labels = batch[-1].view(predictions.shape)
+            loss = self.loss_function(predictions, labels)
+        return loss, self.compute_score(predictions, labels)
+
+    @abstractmethod
+    def compute_score(
+        self, predictions: torch.Tensor, labels: torch.Tensor
+    ) -> float:
+        pass
 
     @property
     @abstractmethod
@@ -143,9 +136,6 @@ class Model(nn.Module, Parameters, ABC):
         self.test_scores = torch.load(
             open(os.path.join(path, "test_scores.pt"), "rb")
         )
-        # self.train_scores = torch.load(open(os.path.join(path,"train_scores.pt"),"rb"))
-        # self.val_scores = torch.load(open(os.path.join(path,"val_scores.pt"),"rb"))
-        # self.training_time = torch.load(open(os.path.join(path,"training_time.pt"),"rb"))
         self.eval()
         print("MODEL LOADED!")
 
@@ -160,15 +150,21 @@ class Model(nn.Module, Parameters, ABC):
         plt.show()
 
     def evaluate(self, data: Dataset, show=True) -> None:
+        """
+        Evaluate the model on the given dataset.
+
+        Args:
+            data (Dataset): The dataset to evaluate the model on.
+            show (bool, optional): Whether to display the classification report. Defaults to True.
+        """
         test_dataloader = data.test_dataloader(len(data.test_data))
         with torch.no_grad():
             for batch in test_dataloader:
                 inputs = (
                     batch[:-1][0].detach().type(torch.float).to(self.device)
                 )  # one sample on each row -> X.shape = (m, d_in)
-                # shape = self.example_input[0].shape
-                # inputs = inputs.reshape(-1, *shape[1:])
-                inputs = inputs.view(-1, 1, 513)
+                shape = self.example_input[0].shape
+                inputs = inputs.view(-1, *shape[1:])
                 labels = batch[-1].detach().type(torch.long).to(self.device)
                 predictions_test = self.predict(inputs)
                 report_test = classification_report(

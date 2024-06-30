@@ -13,7 +13,7 @@ MODEL_PARAMS = {
     "strides": [2, 2, 2, 1],
     "pool_kernels": [2, 2, 2, 2],
     "pool_strides": [1, 1, 1, 1],
-    "fc_dims": [3520, 2],
+    "fc_dims": [3520, 1],
 }
 
 
@@ -67,11 +67,12 @@ class WhistleNet(Model):
             fc_layers.append(nn.Linear(fc_dims[i], fc_dims[i + 1], bias=True))
             fc_layers.append(nn.ReLU())
         fc_layers.append(nn.Dropout(config.model.dropout))
+        fc_layers.append(nn.Sigmoid())
         self.fc = nn.Sequential(*fc_layers)
 
     @property
     def loss_function(self):
-        return FocalLoss()
+        return nn.BCELoss()
 
     @property
     def example_input(self):
@@ -92,3 +93,19 @@ class WhistleNet(Model):
         # Fully Connected Layers
         x = torch.flatten(x, start_dim=1)
         return self.fc(x)
+
+    def compute_score(
+        self, predictions: torch.Tensor, labels: torch.Tensor
+    ) -> float:
+        binary_predictions = torch.where(
+            predictions >= 0.5, torch.tensor(1), torch.tensor(0)
+        )
+        true_positives = (binary_predictions * labels).sum()
+        false_positives = (binary_predictions * (1 - labels)).sum()
+        false_negatives = ((1 - binary_predictions) * labels).sum()
+        precision = true_positives / (true_positives + false_positives)
+        recall = true_positives / (true_positives + false_negatives)
+        f1 = 2 * (precision * recall) / (precision + recall)
+        if f1.isnan():
+            f1 = 0.0
+        return f1

@@ -3,6 +3,7 @@ import torch
 from omegaconf import OmegaConf
 from tqdm import tqdm
 
+from core.dataset import Dataset
 from core.model import Model
 
 
@@ -23,6 +24,7 @@ class Trainer:
         # Training
         model.train()
         with tqdm(train_dataloader) as pbar:
+            pbar.set_description(f"Epoch {epoch}, training")
             for batch in pbar:
                 # Forward propagation
                 loss = model.training_step(batch)
@@ -36,16 +38,13 @@ class Trainer:
         model.eval()
         epoch_loss = 0
         epoch_score = 0
-        for batch in val_dataloader:
-            # Forward propagation
-            try:
+        with tqdm(val_dataloader) as pbar:
+            pbar.set_description(f"Epoch {epoch}, evaluating")
+            for batch in pbar:
                 loss, score = model.validation_step(batch)
                 # Logging
                 epoch_loss += loss.item()
                 epoch_score += score
-            except:
-                print("ERROR")
-                break
 
         epoch_loss /= len(val_dataloader)
         epoch_score /= len(val_dataloader)
@@ -64,7 +63,7 @@ class Trainer:
             return True
 
     # That is the effective training cycle in which the epochs pass by
-    def fit(self, model, data):
+    def fit(self, model: Model, data: Dataset):
         # stuff for dataset
         self.batch_size = self.config.training.batch_size
         train_dataloader = data.train_dataloader(self.batch_size)
@@ -89,6 +88,6 @@ class Trainer:
             finished = self.fit_epoch(
                 epoch, model, optim, train_dataloader, val_dataloader
             )
-            model.evaluate(data, show=False)  # TODO
+            model.evaluate(data, show=False)
             if finished:
                 break
