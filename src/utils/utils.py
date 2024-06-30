@@ -4,7 +4,6 @@ import os
 import numpy as np
 import torch
 import yaml
-from matplotlib import pyplot as plt
 
 
 def to_numpy(tensor) -> np.ndarray:
@@ -29,6 +28,10 @@ def load_config(file_path):
     with open(file_path, "r") as file:
         config = yaml.safe_load(file)
     return config
+
+
+def device():
+    return torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 class Parameters:
