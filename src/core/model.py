@@ -157,22 +157,10 @@ class Model(nn.Module, Parameters, ABC):
             data (Dataset): The dataset to evaluate the model on.
             show (bool, optional): Whether to display the classification report. Defaults to True.
         """
-        test_dataloader = data.test_dataloader(len(data.test_data))
+        test_dataloader = data.test_dataloader(64)
         with torch.no_grad():
             for batch in test_dataloader:
-                inputs = (
-                    batch[:-1][0].detach().type(torch.float).to(self.device)
-                )  # one sample on each row -> X.shape = (m, d_in)
-                shape = self.example_input[0].shape
-                inputs = inputs.view(-1, *shape[1:])
-                labels = batch[-1].detach().type(torch.long).to(self.device)
-                predictions_test = self.predict(inputs)
-                report_test = classification_report(
-                    labels, predictions_test, digits=3, output_dict=True
-                )
-                if show:
-                    report_df = pd.DataFrame(report_test).transpose()
-                    display(report_df)
-                self.test_scores.append(
-                    report_test["accuracy"]
-                )  # TODO hardcodato
+                predictions_test = self.inference(batch)
+                labels = batch[-1].detach().to(self.device)
+                score = self.compute_score(predictions_test, labels)
+                self.test_scores.append(score)

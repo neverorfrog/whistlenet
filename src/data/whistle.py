@@ -32,6 +32,7 @@ class WhistleDataset(Dataset):
             train_data, train_labels, val_data, val_labels = self.split(
                 train_data, train_labels, config.dataset.val_split_size
             )
+
             train_data = TensorData(train_data, train_labels)
             test_data = TensorData(test_data, test_labels)
             val_data = TensorData(val_data, val_labels)

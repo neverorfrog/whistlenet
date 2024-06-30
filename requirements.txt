@@ -19,3 +19,4 @@ pykan
 tqdm
 pytest
 pandas
+torchaudio

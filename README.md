@@ -26,11 +26,11 @@ Drawbacks of this approach
 
 ## Continuous Kernel Convolution
 
-The convolution operator is viewed as a vector-valued continuous function $\psi: \mathbb{R} \rightarrow \mathbb{R}^{N_{out} \times N_{in}}$, parametrized with a small neural network $MLP^{\psi}$
+The convolution operator is now viewed as a vector-valued continuous function $\psi: \mathbb{R} \rightarrow \mathbb{R}^{N_{out} \times N_{in}}$, parametrized with a small neural network $MLP^{\psi}$
   - The input is a relative position $(t-\tau)$ of the convolvee
   - The output is the value $\psi(t-\tau)$ of the convolutional kernel at that position
 
-Important assumption: "the generated kernel is arbitrarily large"
+Consequence: "the generated kernel is arbitrarily large"
 
 Advantage 1: "parameterizing a convolutional kernel with a neural network is
 equivalent to constructing an implicit neural representation of the kernel, with
@@ -45,21 +45,29 @@ Advantage 3: "CKConvs are not only more general than discrete convolutions, but
 that the functional family they describe is also more general than that of
 (linear) recurrent units"
 
+### How exactly does the input go into the $MLP^{\psi}$
 
+We give the $MLP^{\psi}$ a sequence of relative positions. This sequence can be arbitrarily big, thus also as big as the input sequence.
 
-### What is the sequence of relative positions we give as input to $MLP^{\psi}$
-
-### Sine nonlinearity is the best. Why?
-
-### Initialization?
+### Initialization of the kernel network
 
 ### Choice of $\omega_0$ is important. Why?
 
-## Continuous Convolution Block
-
-### Residual connection
-
 ## Continuous Convolutional Neural Network
+
+### Continuous Convolution Block
+
+### Depthwise separable continuous convolution
+
+### L2 regularization on continuous kernel
+
+### Depthwise separable convolution
+
+## Problem: Audio Event Detection
+
+### Dataset
+
+### Training
 
 
 ## References

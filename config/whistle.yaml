@@ -8,12 +8,12 @@ dataset:
   resample: True
 
 model:
-  name: ccnn2
+  name: ccnn3
   bias: True
   loss: BCELoss
   dropout: 0.25
-  num_blocks: 2
-  hidden_channels: 2
+  num_blocks: 3
+  hidden_channels: 1
 
 training:
   lr: 0.0001
@@ -26,9 +26,9 @@ training:
 
 kernel:
   activation: Sine
-  hidden_channels: 20
+  hidden_channels: 10
   num_layers: 32
-  dropout: 0.5
+  dropout: 0.25
   norm_type: boh
-  omega_0: 30
+  omega_0: 79.5
   bias: True

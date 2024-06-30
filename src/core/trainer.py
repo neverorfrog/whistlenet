@@ -88,6 +88,5 @@ class Trainer:
             finished = self.fit_epoch(
                 epoch, model, optim, train_dataloader, val_dataloader
             )
-            model.evaluate(data, show=False)
             if finished:
                 break
