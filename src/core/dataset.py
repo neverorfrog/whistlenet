@@ -28,13 +28,17 @@ class Dataset(Parameters, ABC):
         train_data=None,
         test_data=None,
         val_data=None,
+        savedpath=None,
     ):
         self.train_data = train_data
         self.val_data = val_data
         self.test_data = test_data
         self.name = config.dataset.name
-        path = os.path.join(root, self.name)
-        self.load(path) if config.dataset.load_data else self.save(path)
+        (
+            self.load(savedpath)
+            if config.dataset.load_data
+            else self.save(savedpath)
+        )
 
     def train_dataloader(self, batch_size):
         """

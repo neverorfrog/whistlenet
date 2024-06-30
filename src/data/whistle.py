@@ -23,13 +23,14 @@ class WhistleDataset(Dataset):
     def __init__(self, config: OmegaConf, batch_size=64):
         self.save_parameters()
         self.classes = [0, 1]
+        savedpath = f"{dataroot}/whistle/saved/{config.dataset.name}"
         if not config.dataset.load_data:
             data, labels = self._get_data()
             train_data, train_labels, test_data, test_labels = self.split(
-                data, labels, 0.2
+                data, labels, config.dataset.test_split_size
             )
             train_data, train_labels, val_data, val_labels = self.split(
-                train_data, train_labels, 0.2
+                train_data, train_labels, config.dataset.val_split_size
             )
             train_data = TensorData(train_data, train_labels)
             test_data = TensorData(test_data, test_labels)
@@ -42,14 +43,15 @@ class WhistleDataset(Dataset):
                 train_data=train_data,
                 test_data=test_data,
                 val_data=val_data,
+                savedpath=savedpath,
             )
         else:
-            super().__init__(config=config)
+            super().__init__(config=config, savedpath=savedpath)
 
     def resample(self, train_data):
         X_res = train_data.data.squeeze(1)
         y_res = train_data.labels
-        under = RandomUnderSampler(sampling_strategy=0.2)
+        under = RandomUnderSampler(sampling_strategy=0.3)
         X_res, y_res = under.fit_resample(X_res, y_res)
         kmeans = MiniBatchKMeans(
             n_clusters=32,
