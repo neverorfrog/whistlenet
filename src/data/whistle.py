@@ -52,25 +52,8 @@ class WhistleDataset(Dataset):
     def resample(self, train_data):
         X_res = train_data.data.squeeze(1)
         y_res = train_data.labels
-        under = RandomUnderSampler(sampling_strategy=0.3)
+        under = RandomUnderSampler(sampling_strategy=0.2)
         X_res, y_res = under.fit_resample(X_res, y_res)
-        kmeans = MiniBatchKMeans(
-            n_clusters=32,
-            init="k-means++",
-            max_iter=100,
-            batch_size=4096,
-            random_state=42,
-        )
-        over = KMeansSMOTE(
-            sampling_strategy="minority",
-            random_state=42,
-            k_neighbors=2,
-            n_jobs=-1,  # Use all CPU-Cores
-            kmeans_estimator=kmeans,
-            cluster_balance_threshold="auto",
-            density_exponent="auto",
-        )
-        X_res, y_res = over.fit_resample(X_res, y_res)
         train_data = TensorData(data=X_res, labels=y_res)
         return train_data
 
