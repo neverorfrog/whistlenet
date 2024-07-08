@@ -65,14 +65,14 @@ class WhistleNet(Model):
         fc_layers = []
         for i in range(len(fc_dims) - 1):
             fc_layers.append(nn.Linear(fc_dims[i], fc_dims[i + 1], bias=True))
-            fc_layers.append(nn.ReLU())
+            fc_layers.append(nn.Tanh())
         fc_layers.append(nn.Dropout(config.model.dropout))
         fc_layers.append(nn.Sigmoid())
         self.fc = nn.Sequential(*fc_layers)
 
     @property
     def loss_function(self):
-        return nn.BCELoss()
+        return FocalLoss(gamma=2, alpha=0.5)
 
     @property
     def example_input(self):
