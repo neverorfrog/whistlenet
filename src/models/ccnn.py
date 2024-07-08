@@ -12,27 +12,29 @@ class CCNN(Model):
         super().__init__(config)
 
         ckblocks = []
-        for j in range(config.model.num_blocks):
-            in_channels = (
-                in_channels if j == 0 else config.model.hidden_channels
-            )
-            ckblock = CKBlock(
-                in_channels, config.model.hidden_channels, config
-            )
+        hidden_channels = config.model.hidden_channels
+        num_blocks = config.model.num_blocks
+
+        for j in range(num_blocks):
+            block_in_channels = in_channels if j == 0 else hidden_channels
+            block_out_channels = hidden_channels
+            ckblock = CKBlock(block_in_channels, block_out_channels, config)
             ckblocks.append(ckblock)
         self.backbone = torch.nn.Sequential(*ckblocks)
 
         fc_layers = []
+
         fc_layers.append(
             torch.nn.Linear(config.model.hidden_channels, out_channels)
         )
         fc_layers.append(nn.Dropout(config.model.dropout))
         fc_layers.append(nn.Sigmoid())
-        self.fc = nn.Sequential(*fc_layers)
+        self.fc = torch.nn.Sequential(*fc_layers)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        out = self.backbone(x)
-        return self.fc(out[:, :, -1])
+        out: torch.Tensor = self.backbone(x)
+        out: torch.Tensor = self.fc(out.flatten(start_dim=1))
+        return out
 
     @property
     def example_input(self):
@@ -40,7 +42,7 @@ class CCNN(Model):
 
     @property
     def loss_function(self):
-        return nn.BCELoss()
+        return FocalLoss(gamma=2.0, alpha=0.5)
 
     def compute_score(
         self, predictions: torch.Tensor, labels: torch.Tensor
