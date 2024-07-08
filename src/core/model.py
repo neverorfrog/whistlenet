@@ -39,47 +39,13 @@ class Model(nn.Module, Parameters, ABC):
         """
         pass
 
-    def __call__(self, X):
-        return self.forward(X)
-
-    def predict(self, inputs) -> torch.Tensor:
-        """
-        A method to make predictions using the input data X.
-        """
-        with torch.no_grad():
-            return (
-                torch.softmax(self(inputs), dim=-1).argmax(axis=-1).squeeze()
-            )  # shape = (m)
-
     @property
     @abstractmethod
-    def loss_function(self) -> float:
+    def loss_function(self) -> torch.Tensor:
         """
         A getter method for the loss function property.
         """
         pass
-
-    def inference(self, batch: torch.Tensor) -> torch.Tensor:
-        inputs: torch.Tensor = (
-            batch[:-1][0].type(torch.float).to(self.device)
-        )  # one sample on each row -> X.shape = (m, d_in)
-        shape = self.example_input[0].shape
-        inputs = inputs.view(-1, *shape[1:])
-        predictions = self(inputs)
-        return predictions
-
-    def training_step(self, batch: torch.Tensor) -> float:
-        predictions = self.inference(batch)
-        labels = batch[-1].view(predictions.shape)
-        loss = self.loss_function(predictions, labels)
-        return loss
-
-    def validation_step(self, batch: torch.Tensor) -> tuple[float, float]:
-        with torch.no_grad():
-            predictions = self.inference(batch)
-            labels = batch[-1].view(predictions.shape)
-            loss = self.loss_function(predictions, labels)
-        return loss, self.compute_score(predictions, labels)
 
     @abstractmethod
     def compute_score(
@@ -91,6 +57,41 @@ class Model(nn.Module, Parameters, ABC):
     @abstractmethod
     def example_input(self) -> tuple[torch.Tensor]:
         pass
+
+    def __call__(self, X):
+        return self.forward(X)
+
+    def inference(self, batch: torch.Tensor) -> torch.Tensor:
+        """This should maybe go into the subclass, for now it stays here"""
+        inputs: torch.Tensor = batch[:-1][
+            0
+        ]  # one sample on each row -> X.shape = (m, d_in)
+        shape = self.example_input[0].shape
+        inputs = inputs.view(-1, *shape[1:]).float().to(self.device)
+        predictions = self(inputs)
+        return predictions
+
+    def training_step(self, batch: torch.Tensor) -> float:
+        """
+        A method to compute the loss on the given batch of data.
+
+        Args:
+            batch (torch.Tensor): The batch of data to compute the loss on.
+
+        Returns:
+            float: The computed loss.
+        """
+        predictions = self.inference(batch)
+        labels = batch[-1].view(*predictions.shape).float().to(self.device)
+        loss = self.loss_function(predictions, labels)
+        return loss
+
+    def validation_step(self, batch: torch.Tensor) -> tuple[float, float]:
+        with torch.no_grad():
+            predictions = self.inference(batch)
+            labels = batch[-1].view(*predictions.shape)
+            loss = self.loss_function(predictions, labels)
+        return loss, self.compute_score(predictions, labels)
 
     def save(self) -> None:
         """
@@ -126,6 +127,7 @@ class Model(nn.Module, Parameters, ABC):
             self.training_time,
             open(os.path.join(path, "training_time.pt"), "wb"),
         )
+        OmegaConf.save(config=self.config, f=f"{path}/{self.name}_config.yaml")
         print("MODEL SAVED!")
 
     def load(self) -> None:
@@ -136,6 +138,7 @@ class Model(nn.Module, Parameters, ABC):
         self.test_scores = torch.load(
             open(os.path.join(path, "test_scores.pt"), "rb")
         )
+        self.config = OmegaConf.load(f"{path}/{self.name}_config.yaml")
         self.eval()
         print("MODEL LOADED!")
 
@@ -149,7 +152,7 @@ class Model(nn.Module, Parameters, ABC):
         plt.xlabel("epoch")
         plt.show()
 
-    def evaluate(self, data: Dataset, show=True) -> None:
+    def evaluate(self, data: Dataset) -> None:
         """
         Evaluate the model on the given dataset.
 
@@ -157,10 +160,41 @@ class Model(nn.Module, Parameters, ABC):
             data (Dataset): The dataset to evaluate the model on.
             show (bool, optional): Whether to display the classification report. Defaults to True.
         """
-        test_dataloader = data.test_dataloader(64)
+        test_dataloader = data.test_dataloader(1024)
+        sum_report = dict()
+        sum_report["accuracy"] = 0
         with torch.no_grad():
             for batch in test_dataloader:
-                predictions_test = self.inference(batch)
+                predictions = self.inference(batch)
+                binary_predictions = torch.where(
+                    predictions >= 0.5, torch.tensor(1), torch.tensor(0)
+                )
                 labels = batch[-1].detach().to(self.device)
-                score = self.compute_score(predictions_test, labels)
-                self.test_scores.append(score)
+                report = classification_report(
+                    labels.cpu().numpy(),
+                    binary_predictions.cpu().numpy(),
+                    output_dict=True,
+                )
+                for label, metrics in report.items():
+                    if label not in sum_report:
+                        sum_report[label] = {}
+                    if label == "accuracy":
+                        sum_report[label] += metrics
+                    else:
+                        for metric, value in metrics.items():
+                            if metric in sum_report[label]:
+                                sum_report[label][metric] += value
+                            else:
+                                sum_report[label][metric] = value
+                self.test_scores.append(report["accuracy"])
+
+            num_reports = len(test_dataloader)
+            avg_report = dict()
+            for label, metrics in sum_report.items():
+                if label != "accuracy":
+                    avg_report[label] = {
+                        metric: value / num_reports
+                        for metric, value in metrics.items()
+                    }
+            avg_report_df = pd.DataFrame(avg_report).T
+            display(avg_report_df)
