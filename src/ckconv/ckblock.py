@@ -1,4 +1,5 @@
 import torch
+import torch.nn as nn
 from omegaconf import OmegaConf
 
 from ckconv.ckconv import CKConv
@@ -40,6 +41,8 @@ class CKBlock(torch.nn.Module):
     def __init__(self, in_channels: int, out_channels: int, config: OmegaConf):
         super().__init__()
 
+        self.activation = nn.LeakyReLU()
+
         self.conv1 = CKConv(in_channels, out_channels, config)
         self.conv2 = CKConv(out_channels, out_channels, config)
 
@@ -59,9 +62,12 @@ class CKBlock(torch.nn.Module):
         self.shortcut = torch.nn.Sequential(*shortcut)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        shortcut = self.shortcut(x)
-        out = self.dropout(torch.relu(self.norm1(self.conv1(x))))
-        out = torch.relu(
-            self.dropout(torch.relu(self.norm2(self.conv2(out)))) + shortcut
-        )
+
+        out = self.dropout(self.activation(self.norm1(self.conv1(x))))
+        out = self.dropout(self.activation(self.norm2(self.conv2(out))))
+
+        shortcut = self.shortcut(x)[:, :, : out.size(2)]
+
+        out = self.activation(out + shortcut)
+
         return out

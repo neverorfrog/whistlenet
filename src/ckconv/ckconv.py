@@ -49,12 +49,15 @@ class CKConv(torch.nn.Module):
         rel_pos = self.handle_rel_positions(x)
 
         # Pass relative positions through self.Kernel (Step 2)
-        conv_kernel = self.Kernel(rel_pos).view(-1, x_shape[1], *x_shape[2:])
+        conv_kernel = self.Kernel(rel_pos).view(-1, x_shape[1], x_shape[2])
         self.conv_kernel = conv_kernel
 
         # Compute the convolution (Step 3)
-        x, kernel = causal_padding(x, conv_kernel)
-        return torch.nn.functional.conv1d(x, kernel, self.bias, padding=0)
+        output = torch.nn.functional.conv1d(
+            x, conv_kernel, self.bias, padding=0
+        )
+
+        return output
         # return causal_fftconv(x, conv_kernel, self.bias)
 
     def handle_rel_positions(self, x: torch.Tensor) -> torch.Tensor:
