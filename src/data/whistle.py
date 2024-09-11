@@ -21,14 +21,15 @@ class WhistleDataset(Dataset):
     """The Whistle dataset"""
 
     def __init__(self, config: OmegaConf, batch_size=64):
-        self.save_parameters()
         self.classes = [0, 1]
+        self.config = config
         savedpath = f"{dataroot}/whistle/saved/{config.dataset.name}"
         if not config.dataset.load_data:
-            data, labels = self._get_data()
-            train_data, train_labels, test_data, test_labels = self.split(
-                data, labels, config.dataset.test_split_size
+
+            train_data, train_labels, test_data, test_labels = (
+                self._get_npy_data()
             )
+
             train_data, train_labels, val_data, val_labels = self.split(
                 train_data, train_labels, config.dataset.val_split_size
             )
@@ -57,7 +58,7 @@ class WhistleDataset(Dataset):
         train_data = TensorData(data=X_res, labels=y_res)
         return train_data
 
-    def _get_data(self) -> tuple:
+    def _get_data(self, config) -> tuple:
         data = []
         labels = []
         for j, filename in enumerate(os.listdir(labelpath)):
@@ -69,4 +70,14 @@ class WhistleDataset(Dataset):
                 labels.append(audio_labels[i])
         data = torch.from_numpy(np.array(data))
         labels = torch.from_numpy(np.array(labels))
-        return data, labels
+        train_data, train_labels, test_data, test_labels = self.split(
+            data, labels, config.dataset.test_split_size
+        )
+        return train_data, train_labels, test_data, test_labels
+
+    def _get_npy_data(self) -> tuple:
+        train_data = np.load(f"{dataroot}/whistle/whistle_x_base_train.npy")
+        train_labels = np.load(f"{dataroot}/whistle/whistle_y_base_train.npy")
+        test_data = np.load(f"{dataroot}/whistle/whistle_x_base_test.npy")
+        test_labels = np.load(f"{dataroot}/whistle/whistle_y_base_test.npy")
+        return train_data, train_labels, test_data, test_labels

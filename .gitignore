@@ -4,6 +4,7 @@ data/whistle/annotated
 data/whistle/done_raw
 data/whistle/raw
 data/whistle/saved/*/*.dat
+*.npy
 __pycache__
 */__pycache__
 */build
