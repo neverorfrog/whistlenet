@@ -9,7 +9,16 @@ import warnings
 from pathlib import Path
 
 import sounddevice as sd
+import torch
+import yaml
+from omegaconf import OmegaConf
 from tqdm import tqdm
+
+from models.whistlenet import WhistleNet
+
+file_path = "../../config/whistle.yaml"
+with open(file_path, "r") as file:
+    config = OmegaConf.create(yaml.safe_load(file))
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
@@ -30,7 +39,7 @@ mplstyle.use("fast")
 
 MICS = ["rear left", "rear right", "front left", "front right"]
 FOLDER = "AnnotationData"
-MODEL_NAME = "./PreTrainedNetworks/WhistleDetection/WhistleNetMk16.h5"
+MODEL_NAME = "../../models/whistlenet/model.pt"
 WINDOW_SIZE = 1024
 THRESHOLD = 0.65
 NEGATIVE_THERSHOLD = 0.01
@@ -71,7 +80,7 @@ def calculate_whistle_data(
         print(f"ERROR: No such file: {Path(path).stem}.wav")
         return
 
-    model = tf.keras.models.load_model(model_name, compile=False)
+    model = WhistleNet(config)
 
     if data is None or samplerate is None:
         samplerate, data = wavfile.read(path)
@@ -114,7 +123,7 @@ def calculate_whistle_data(
         for fft_data in np.array_split(
             fft_data_windows, np.ceil(fft_data_windows.shape[0] / 2048)
         ):
-            channel_label.extend(model.predict(fft_data))
+            channel_label.extend(model.inference(fft_data))
         label.append(channel_label)
     label = np.asarray(label)
     negativ_label = np.copy(label)
@@ -853,4 +862,4 @@ max_num_of_detected_whistles = None
 fft_windowed_data = None
 fft_windowed_data_log10 = None
 
-label_dataset(dataset="Demo", folder="AnnotationData")
+label_dataset(dataset="Demo", folder="raw/train")
