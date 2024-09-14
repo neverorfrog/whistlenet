@@ -1,0 +1,4 @@
+name: cnn
+loss: BCELoss
+bias: true
+dropout: 0.2
