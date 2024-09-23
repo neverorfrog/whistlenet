@@ -25,36 +25,52 @@ class KernelNet(torch.nn.Module):
         """
         super().__init__()
 
-        # dim_linear = config.dim_linear
-        # Norm = Norm[config.norm_type]
-
-        Activation: torch.nn.Module = getcallable(layers, config.activation)
+        Activation: torch.nn.Module = getcallable(torch.nn, config.activation)
         Linear: torch.nn.Module = getcallable(layers, config.linear_type)
 
         # The input of the network is a vector of relative positions and so input_dim = 1
+
         self.kernel_net = torch.nn.Sequential(
-            # 1st layer
-            weight_norm(Linear(1, config.hidden_channels, bias=config.bias)),
-            layers.Multiply(config.omega_0),
+            # Layer 1
+            Linear(1, config.hidden_channels, bias=config.bias),
             Activation(),
-            # 2nd Layer
-            weight_norm(
-                Linear(
-                    config.hidden_channels,
-                    config.hidden_channels,
-                    bias=config.bias,
-                )
+            # Layer 2
+            Linear(
+                config.hidden_channels,
+                config.hidden_channels,
+                bias=config.bias,
             ),
-            layers.Multiply(config.omega_0),
             Activation(),
-            # 3rd Layer
-            weight_norm(
-                Linear(config.hidden_channels, out_channels, bias=config.bias)
-            ),
+            # Layer 3
+            Linear(config.hidden_channels, out_channels, bias=config.bias),
+            Activation(),
         )
+
+        self.initialize(Activation)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.kernel_net(x)
 
     def __call__(self, x: torch.Tensor) -> torch.Tensor:
         return self.forward(x)
+
+    def initialize(
+        self,
+        NonlinearType: torch.nn.Module,
+    ):
+        # Define the gain
+        if NonlinearType == torch.nn.ReLU:
+            nonlin = "relu"
+        elif NonlinearType == torch.nn.LeakyReLU:
+            nonlin = "leaky_relu"
+        else:
+            nonlin = "linear"
+
+        # Initialize hidden layers
+        for i, m in enumerate(self.kernel_net.modules()):
+            if isinstance(
+                m, (torch.nn.Conv1d, torch.nn.Conv2d, torch.nn.Linear)
+            ):
+                torch.nn.init.kaiming_uniform_(m.weight, nonlinearity=nonlin)
+                if m.bias is not None:
+                    m.bias.data.fill_(0.0)

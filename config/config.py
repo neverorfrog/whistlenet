@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import yaml
 from omegaconf import MISSING, OmegaConf
 
-from config.enums import Activation, Loss, Metrics, Optimizer
+from config.enums import Activation, KernelType, Loss, Metrics, Optimizer
 
 
 @dataclass
@@ -21,6 +21,7 @@ class DatasetConfig:
     batch_size: int = MISSING
     load_data: bool = MISSING
     resample: bool = MISSING
+    scale: bool = MISSING
 
 
 @dataclass
@@ -31,11 +32,11 @@ class TrainerConfig:
     weight_decay: float = MISSING
     optim: Optimizer = MISSING  # type: ignore
     metrics: Metrics = MISSING  # type: ignore
-    batch_size: int = MISSING
 
 
 @dataclass
 class KernelConfig:
+    type: KernelType = MISSING  # type: ignore
     activation: Activation = MISSING  # type: ignore
     linear_type: str = MISSING
     hidden_channels: int = MISSING
@@ -50,8 +51,6 @@ class KernelConfig:
 class WhistlenetConfig:
     name: str = MISSING
     loss: Loss = MISSING  # type: ignore
-    in_channels: int = MISSING
-    out_channels: int = MISSING
     bias: bool = MISSING
     dropout: float = MISSING
     num_blocks: int = MISSING
@@ -65,6 +64,7 @@ class BaselineConfig:
     loss: Loss = MISSING  # type: ignore
     bias: bool = MISSING
     dropout: float = MISSING
+    hidden_dropout: float = MISSING
 
 
 @dataclass

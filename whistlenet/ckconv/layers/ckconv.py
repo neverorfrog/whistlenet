@@ -1,7 +1,9 @@
 import torch
 
+import whistlenet.ckconv.kernels as kernels
 from config.config import WhistlenetConfig
-from whistlenet.ckconv.kernels import KernelNet
+from whistlenet.ckconv.kernels import KernelNet, Siren
+from whistlenet.core.utils import getcallable
 
 
 class CKConv(torch.nn.Module):
@@ -10,7 +12,9 @@ class CKConv(torch.nn.Module):
     ):
         super().__init__()
 
-        self.Kernel = KernelNet(out_channels * in_channels, config.kernel)
+        self.Kernel = getcallable(kernels, config.kernel.type)(
+            out_channels * in_channels, config.kernel
+        )
 
         if config.kernel.bias:
             self.bias = torch.nn.Parameter(torch.Tensor(out_channels))

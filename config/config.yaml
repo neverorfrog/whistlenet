@@ -3,44 +3,44 @@ torch:
   seed: 42
 
 dataset:
-  name: naodevils
+  name: overunder
   train_size: 0.75
-  test_size: 0.15
+  test_size: 0.25
   val_size: 0.1
-  batch_size: 128
+  batch_size: 64
   load_data: True
-  resample: False
+  resample: True
+  scale: False
 
 trainer:
   epochs: 30
   patience: 5
-  lr: 0.0001
-  weight_decay: 0.00001
+  lr: 0.000001
+  weight_decay: 0.000001
   optim: RAdam
-  metrics: F1Score
-  batch_size: 128
+  metrics: Precision
 
 whistlenet:
-  name: ccnn1
+  name: ccnn3
   loss: BCELoss
-  in_channels: 1
-  out_channels: 1
-  dropout: 0.2
+  dropout: 0.3
   bias: True
-  num_blocks: 2
-  hidden_channels: 32
+  num_blocks: 4
+  hidden_channels: 16
   kernel:
-    activation: Sine
+    type: KernelNet
+    activation: ReLU
     linear_type: Linear1d
     norm_type: boh
     hidden_channels: 32
     dropout: 0.2
-    omega_0: 89
+    omega_0: 750.0
     bias: True
     conv_use_fft: True
 
 baseline:
-  name: cnn
+  name: naodevils
   loss: BCELoss
-  dropout: 0.2
+  hidden_dropout: 0.3
+  dropout: 0.3
   bias: True

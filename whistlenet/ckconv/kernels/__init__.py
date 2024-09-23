@@ -1,1 +1,2 @@
-from .kernelnet import KernelNet
+from .mlp import KernelNet
+from .siren import Siren

@@ -1,4 +1,6 @@
 import os
+import sys
+from enum import Enum
 
 import librosa
 import numpy as np
@@ -6,18 +8,33 @@ import soundfile as sf
 import torch
 from matplotlib import pyplot as plt
 
+N_FFT = 1024
+NUM_FREQS = (N_FFT // 2) + 1
+WINDOW_SIZE = 1024
+SAMPLE_RATE = 22050
+
+
+class SampleType(Enum):
+    No_Whistle = 0
+    Whistle = 1
+
 
 class Audio:
-    """Class that contains audio data"""
+    """
+    Class that contains audio data
+
+    self.y: audio data in time series format
+    self.S: audio data in frequency domain (melspectrogram) with shape (channels, freqs, frames)
+    """
 
     def __init__(
         self,
         name=None,
         datapath=None,
         labelpath=None,
-        n_fft=1024,
-        hop_length=1024,
-        sr=44100,
+        n_fft=N_FFT,
+        hop_length=N_FFT,
+        sr=SAMPLE_RATE,
         y=None,
     ):
         self.name = name
@@ -31,22 +48,41 @@ class Audio:
         if y is None and name is not None:
             filepath = os.path.join(self.datapath, name) + ".wav"
             self.f = sf.SoundFile(filepath)
-            self.y, _ = librosa.load(self.f, sr=self.sr)
+            self.y, _ = librosa.load(self.f, sr=self.sr, mono=False)
         else:
             self.y = y
 
-        # short time fourier transform
-        self.window_fn = librosa.filters.get_window("hamming", Nx=n_fft)
+        # frequency domain
+        self.window_fn = librosa.filters.get_window("hann", Nx=n_fft)
         self.S = librosa.amplitude_to_db(
-            np.abs(
+            S=np.abs(
                 librosa.stft(
-                    self.y,
+                    y=self.y,
                     n_fft=n_fft,
                     hop_length=hop_length,
                     window=self.window_fn,
+                    # sr=self.sr,
+                    # n_mels=NUM_FREQS,
                 )
-            )
+            ),
+            ref=np.max,
         )
+
+        self.mfcc = librosa.feature.mfcc(
+            S=self.S, sr=self.sr, n_mfcc=NUM_FREQS
+        )
+
+        if self.S.ndim == 2:
+            self.mfcc = np.expand_dims(self.mfcc, axis=0)
+            self.S = np.expand_dims(self.S, axis=0)
+
+        if self.S.ndim != 3:
+            print(f"Expected 3 dimensions, got {self.S.ndim}")
+            sys.exit(1)
+
+        self.channels = self.S.shape[0]
+        self.freqs = self.S.shape[1]
+        self.frames = self.S.shape[2]
 
     def wave_plot(self):
         librosa.display.waveshow(self.y, sr=self.sr)
@@ -54,7 +90,7 @@ class Audio:
     def freq_plot(self):
         frames = librosa.time_to_frames(
             np.linspace(
-                0, librosa.get_duration(y=self.y, sr=self.sr), self.S.shape[1]
+                0, librosa.get_duration(y=self.y, sr=self.sr), self.S.shape[-1]
             ),
             sr=self.sr,
             hop_length=self.hop_length,
@@ -63,7 +99,7 @@ class Audio:
             frames, sr=self.sr, hop_length=self.hop_length
         )
         librosa.display.specshow(
-            librosa.amplitude_to_db(self.S, ref=np.max),
+            librosa.amplitude_to_db(self.S[0, :, :], ref=np.max),
             x_coords=frames,
             y_axis="log",
             hop_length=self.hop_length,
@@ -118,7 +154,8 @@ class Audio:
         with open(filepath, "r") as file:
             for line in file:
                 start_time, end_time = map(float, line.strip().split())
-                events.append((start_time, end_time))
+                if end_time >= start_time:
+                    events.append((start_time, end_time))
         return events
 
     def get_labels(self):
@@ -127,10 +164,14 @@ class Audio:
         Based on txt file in data/whistle/labels
         """
         events = self.get_whistle_events()
-        labels = torch.zeros(self.S.shape[1])
-        for event in events:
-            start = self.time2frame(event[0])
-            end = self.time2frame(event[1])
-            for i in range(start, end + 1):
-                labels[i] = 1
+        labels = torch.fill(
+            torch.zeros(self.channels, self.frames),
+            SampleType.No_Whistle.value,
+        )
+        for channel in range(self.channels):
+            for event in events:
+                start = self.time2frame(event[0]) + 1
+                end = self.time2frame(event[1]) + 3
+                for i in range(start, end + 1):
+                    labels[channel, i] = SampleType.Whistle.value
         return labels
