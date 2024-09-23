@@ -1,19 +1,21 @@
 import torch
 import torch.nn as nn
 
+from config.config import BaselineConfig
 from whistlenet.core.layers import MaxPool1dSame
 from whistlenet.core.utils import FocalLoss
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 from whistlenet.core import Model
+from whistlenet.core.utils import NUM_FREQS
 
 MODEL_PARAMS = {
     "channels": [1, 32, 64, 128, 64],
     "kernels": [5, 5, 5, 5],
     "strides": [2, 2, 2, 1],
     "pool_kernels": [2, 2, 2, 2],
-    "pool_strides": [1, 1, 1, 1],
-    "fc_dims": [3520, 1],
+    "pool_strides": [2, 2, 2, 2],
+    "fc_dims": [192, 1],
 }
 
 
@@ -37,7 +39,7 @@ class Baseline(Model):
     - ELU
     """
 
-    def __init__(self, config) -> None:
+    def __init__(self, config: BaselineConfig) -> None:
         super().__init__(config)
 
         # Convolutional Layers (take as input the image)
@@ -65,7 +67,10 @@ class Baseline(Model):
                     kernel_size=pool_kernels[i], stride=pool_strides[i]
                 )
             )
-            conv_layers.append(nn.Dropout(config.dropout))
+            if i > 0:
+                conv_layers.append(nn.Dropout(config.hidden_dropout))
+            else:
+                conv_layers.append(nn.Dropout(config.dropout))
 
         conv_layers.append(
             nn.Conv1d(
@@ -76,7 +81,7 @@ class Baseline(Model):
                 device=device,
             )
         )
-        conv_layers.append(nn.Sigmoid())
+        conv_layers.append(nn.ELU())
         self.conv = nn.Sequential(*conv_layers)
 
         # Fully Connected layers
@@ -95,9 +100,9 @@ class Baseline(Model):
 
     @property
     def example_input(self):
-        return (torch.randn(1, 1, 513),)
+        return (torch.randn(1, 1, NUM_FREQS),)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
         Input:
             An image (already preprocessed)
@@ -105,26 +110,10 @@ class Baseline(Model):
             Class of that image
         """
         # Convolutional layers
-        x = torch.tensor(x, dtype=torch.float32)
+        x = x.clone().detach().to(device).requires_grad_(True)
         x = self.conv(x)
         # print("state shape={0}".format(x.shape))
 
         # Fully Connected Layers
         x = torch.flatten(x, start_dim=1)
         return self.fc(x)
-
-    def compute_score(
-        self, predictions: torch.Tensor, labels: torch.Tensor
-    ) -> float:
-        binary_predictions = torch.where(
-            predictions >= 0.5, torch.tensor(1), torch.tensor(0)
-        )
-        true_positives = (binary_predictions * labels).sum()
-        false_positives = (binary_predictions * (1 - labels)).sum()
-        false_negatives = ((1 - binary_predictions) * labels).sum()
-        precision = true_positives / (true_positives + false_positives)
-        recall = true_positives / (true_positives + false_negatives)
-        f1 = 2 * (precision * recall) / (precision + recall)
-        if f1.isnan():
-            f1 = 0.0
-        return f1
