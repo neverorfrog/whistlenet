@@ -13,4 +13,4 @@ __pycache__
 src/*/build
 src/tests/*/build
 .ipynb_checkpoints
-models
+./models
