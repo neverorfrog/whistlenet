@@ -35,5 +35,5 @@ Activation = Enum(
     "ActivationFunction", {name: name for name in ActivationList}
 )
 
-KernelTypeList = ["KernelNet", "Siren"]
+KernelTypeList = ["KernelNet", "Siren", "MAGNet"]
 KernelType = Enum("KernelType", {name: name for name in KernelTypeList})

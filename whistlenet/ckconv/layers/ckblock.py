@@ -3,6 +3,7 @@ import torch.nn as nn
 
 from config import WhistlenetConfig
 from whistlenet.ckconv.layers.ckconv import CKConv
+from whistlenet.ckconv.layers.flexconv import FlexConv
 from whistlenet.core.layers import LayerNorm, Linear1d
 
 
@@ -13,18 +14,14 @@ class CKBlock(torch.nn.Module):
 
     input
     | ---------------|
+    BatchNorm        |
     CKConv           |
-    LayerNorm        |
-    ReLU             |
+    GELU             |
     DropOut          |
-    |                |
-    CKConv           |
-    LayerNorm        |
-    ReLU             |
-    DropOut          |
+    Linear           |
+    GELU             |
     + <--------------|
     |
-    ReLU
     |
     output
 
@@ -43,17 +40,26 @@ class CKBlock(torch.nn.Module):
     ):
         super().__init__()
 
-        self.activation = nn.LeakyReLU()
+        # Activation
+        self.activation = nn.ELU()
 
-        self.conv1 = CKConv(in_channels, out_channels, config)
-        self.conv2 = CKConv(out_channels, out_channels, config)
+        # Continuous convolution layer
+        self.conv = CKConv(in_channels, out_channels, config)
 
-        # Normalization layers
-        self.norm1 = LayerNorm(out_channels)
-        self.norm2 = LayerNorm(out_channels)
+        # Normalization layer
+        self.batch_norm = nn.BatchNorm1d(in_channels)
 
         # Dropout layer
         self.dropout: torch.nn.Module = torch.nn.Dropout(p=config.dropout)
+
+        self.layers = nn.Sequential(
+            self.batch_norm,
+            self.conv,
+            self.activation,
+            self.dropout,
+            Linear1d(out_channels, out_channels),
+            self.activation,
+        )
 
         # Residual connection
         shortcut = []
@@ -63,11 +69,8 @@ class CKBlock(torch.nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
 
-        out = self.dropout(self.activation(self.norm1(self.conv1(x))))
-        out = self.dropout(self.activation(self.norm2(self.conv2(out))))
-
+        out: torch.Tensor = self.layers(x)
         shortcut = self.shortcut(x)[:, :, : out.size(2)]
-
         out = self.activation(out + shortcut)
 
         return out

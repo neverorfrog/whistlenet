@@ -1,2 +1,2 @@
 from .audiomnist import AudioMnistDataset
-from .whistle import WhistleDataset
+from .whistle_dataset import WhistleDataset

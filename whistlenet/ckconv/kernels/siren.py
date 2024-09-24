@@ -8,7 +8,9 @@ from whistlenet.core.utils import getcallable
 
 
 class Siren(torch.nn.Module):
-    def __init__(self, out_channels: int, config: KernelConfig):
+    def __init__(
+        self, in_channels: int, out_channels: int, config: KernelConfig
+    ):
         """
         Creates an 3-layer MLP that parameterizes a convolutional kernel as:
 
@@ -63,9 +65,6 @@ class Siren(torch.nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.kernel_net(x)
-
-    def __call__(self, x: torch.Tensor) -> torch.Tensor:
-        return self.forward(x)
 
     def initialize(self, omega_0):
         net_layer = 1

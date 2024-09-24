@@ -1,19 +1,20 @@
 import os
-import random
-from abc import ABC, abstractmethod
+from abc import ABC
 
+import lightning as L
 import numpy as np
 import torch
 from torch.utils.data import DataLoader, WeightedRandomSampler
 
 from config import DatasetConfig
+from whistlenet.core import Dataset
 from whistlenet.core.utils import NUM_FREQS, project_root
 
 projroot = project_root()
 root = f"{projroot}/data"
 
 
-class Dataset(ABC):
+class LightningDataset(ABC, L.LightningDataModule):
     """The abstract class for handling datasets"""
 
     def __init__(
@@ -31,7 +32,7 @@ class Dataset(ABC):
         self.name = config.name
         (self.load(savedpath) if config.load_data else self.save(savedpath))
 
-    def train_dataloader(self):
+    def train_dataloader(self) -> DataLoader:
         """
         Returns a training dataloader with a specified batch size.
 
@@ -45,7 +46,7 @@ class Dataset(ABC):
             self.train_data, self.config.batch_size, False
         )
 
-    def val_dataloader(self):
+    def val_dataloader(self) -> DataLoader:
         """
         Creates a validation data loader with the given batch size.
 
@@ -59,7 +60,7 @@ class Dataset(ABC):
             self.val_data, self.config.batch_size, False
         )
 
-    def test_dataloader(self):
+    def test_dataloader(self) -> DataLoader:
         """
         A function to create a test data loader with the given batch size.
 
@@ -116,9 +117,7 @@ class Dataset(ABC):
         data = self.train_data
 
         # summarizing
-        print(f"Train size: {len(self.train_data)}")
-        print(f"Validation size: {len(self.val_data)}")
-        print(f"Test size: {len(self.test_data)}")
+        print(f"N Examples: {len(data.data)}")
         print(f"N Classes: {len(data.classes)}")
         print(f"Classes: {data.classes}")
 

@@ -26,17 +26,26 @@ class DatasetConfig:
 
 @dataclass
 class TrainerConfig:
+    experiment: str = MISSING
     epochs: int = MISSING
     patience: int = MISSING
+    ckpt_path: str = MISSING
+    resume_training: bool = MISSING
+    min_delta: float = MISSING
+
+
+@dataclass
+class OptimizerConfig:
+    type: Optimizer = MISSING  # type: ignore
     lr: float = MISSING
     weight_decay: float = MISSING
-    optim: Optimizer = MISSING  # type: ignore
-    metrics: Metrics = MISSING  # type: ignore
 
 
 @dataclass
 class KernelConfig:
     type: KernelType = MISSING  # type: ignore
+    size: int = MISSING  # type: ignore
+    no_layers: int = MISSING
     activation: Activation = MISSING  # type: ignore
     linear_type: str = MISSING
     hidden_channels: int = MISSING
@@ -45,26 +54,40 @@ class KernelConfig:
     omega_0: float = MISSING
     bias: bool = MISSING
     conv_use_fft: bool = MISSING
+    init_spatial_value: float = MISSING
+    steerable: bool = MISSING
+    causal: bool = MISSING
+    alpha: float = MISSING
+    beta: float = MISSING
+
+
+@dataclass
+class MaskConfig:
+    type: str = MISSING
+    init_value: float = MISSING
+    threshold: float = MISSING
+    dynamic_cropping: bool = MISSING
+    learn_mean: bool = MISSING
 
 
 @dataclass
 class WhistlenetConfig:
     name: str = MISSING
-    loss: Loss = MISSING  # type: ignore
     bias: bool = MISSING
     dropout: float = MISSING
     num_blocks: int = MISSING
     hidden_channels: int = MISSING
     kernel: KernelConfig = MISSING
+    optimizer: OptimizerConfig = MISSING
+    mask: MaskConfig = MISSING
 
 
 @dataclass
 class BaselineConfig:
     name: str = MISSING
-    loss: Loss = MISSING  # type: ignore
     bias: bool = MISSING
     dropout: float = MISSING
-    hidden_dropout: float = MISSING
+    optimizer: OptimizerConfig = MISSING
 
 
 @dataclass

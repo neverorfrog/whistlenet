@@ -1,0 +1,34 @@
+BERLIN: 
+    OUT: 6/6
+    IN: 4/4
+
+HULKs:
+    OUT: 3/3
+    IN: 2/4
+
+BHuman:
+    OUT: 8/8
+    IN: 6/8
+
+HTWK:
+    OUT: 2/2
+    IN: 1/2
+
+BEMBELBOTS:
+    OUT: 4/4
+    IN: 2/4
+
+RUNSWIFT:
+    OUT: 2/2
+    IN: 1/2
+
+HULKS:
+    OUT: 7/7
+    IN: 3/5
+
+NOMADZ:
+    OUT: 6/6
+    IN: 4/6
+
+
+

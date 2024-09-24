@@ -1,6 +1,6 @@
 import torch
 
-from whistlenet.core.math.causal_fftconv import causal_fftconv
+from whistlenet.core.math.fftconv import fftconv1d
 
 
 class CausalConv1d(torch.nn.Module):
@@ -42,7 +42,7 @@ class CausalConv1d(torch.nn.Module):
             weight = self.weight
 
         # Perform causal convolution
-        return causal_fftconv(
+        return fftconv1d(
             x,
             weight,
             self.bias,

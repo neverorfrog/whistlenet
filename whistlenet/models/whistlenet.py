@@ -4,10 +4,11 @@ import torch.nn as nn
 from config import WhistlenetConfig
 from whistlenet.ckconv.layers.ckblock import CKBlock
 from whistlenet.core import Model
-from whistlenet.core.utils import FocalLoss
+from whistlenet.core.lightning import LightningModel
+from whistlenet.core.utils import NUM_FREQS, FocalLoss
 
 
-class WhistleNet(Model):
+class WhistleNet(LightningModel):
     def __init__(
         self, in_channels: int, out_channels: int, config: WhistlenetConfig
     ):
@@ -24,36 +25,26 @@ class WhistleNet(Model):
             ckblocks.append(ckblock)
         self.backbone = torch.nn.Sequential(*ckblocks)
 
-        fc_layers = []
+        self.pool = nn.AdaptiveMaxPool1d(32)
 
-        fc_layers.append(torch.nn.Linear(config.hidden_channels, out_channels))
+        fc_layers = []
+        fc_layers.append(nn.Linear(32, 16))
+        fc_layers.append(nn.Tanh())
         fc_layers.append(nn.Dropout(config.dropout))
+        fc_layers.append(nn.Linear(16, out_channels))
         fc_layers.append(nn.Sigmoid())
         self.fc = torch.nn.Sequential(*fc_layers)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         out: torch.Tensor = self.backbone(x)
-        out: torch.Tensor = self.fc(out.flatten(start_dim=1))
+        out: torch.Tensor = self.pool(out.flatten(start_dim=1))
+        out: torch.Tensor = self.fc(out)
         return out
 
     @property
     def example_input(self):
-        return (torch.randn(1, 1, 513),)  # hardcodato
+        return (torch.randn(1, 1, NUM_FREQS),)
 
     @property
     def loss_function(self):
-        return FocalLoss(gamma=2.0, alpha=0.5)
-
-    def compute_score(
-        self, predictions: torch.Tensor, labels: torch.Tensor
-    ) -> float:
-        binary_predictions = torch.where(
-            predictions >= 0.5, torch.tensor(1), torch.tensor(0)
-        )
-        true_positives = (binary_predictions * labels).sum()
-        false_positives = (binary_predictions * (1 - labels)).sum()
-        if true_positives.sum() == 0 and false_positives == 0:
-            precision = 0
-        else:
-            precision = true_positives / (true_positives + false_positives)
-        return precision
+        return torch.nn.BCELoss()

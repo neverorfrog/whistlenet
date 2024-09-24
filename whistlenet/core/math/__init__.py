@@ -1,2 +1,2 @@
-from .causal_fftconv import causal_fftconv
+from .fftconv import fftconv1d
 from .functions import *

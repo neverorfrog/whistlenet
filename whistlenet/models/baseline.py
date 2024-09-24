@@ -96,7 +96,7 @@ class Baseline(Model):
 
     @property
     def loss_function(self):
-        return FocalLoss(gamma=2, alpha=0.5)
+        return torch.nn.BCEWithLogitsLoss()
 
     @property
     def example_input(self):

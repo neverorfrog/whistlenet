@@ -11,7 +11,7 @@ from matplotlib import pyplot as plt
 N_FFT = 1024
 NUM_FREQS = (N_FFT // 2) + 1
 WINDOW_SIZE = 1024
-SAMPLE_RATE = 22050
+SAMPLE_RATE = 44100
 
 
 class SampleType(Enum):
@@ -61,8 +61,6 @@ class Audio:
                     n_fft=n_fft,
                     hop_length=hop_length,
                     window=self.window_fn,
-                    # sr=self.sr,
-                    # n_mels=NUM_FREQS,
                 )
             ),
             ref=np.max,
@@ -170,8 +168,8 @@ class Audio:
         )
         for channel in range(self.channels):
             for event in events:
-                start = self.time2frame(event[0]) + 1
-                end = self.time2frame(event[1]) + 3
+                start = self.time2frame(event[0])
+                end = self.time2frame(event[1])
                 for i in range(start, end + 1):
                     labels[channel, i] = SampleType.Whistle.value
         return labels
