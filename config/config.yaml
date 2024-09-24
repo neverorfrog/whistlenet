@@ -11,6 +11,8 @@ dataset:
   load_data: True
   resample: True
   scale: False
+  drive_url: https://drive.google.com/drive/u/1/folders/1nLysAbeCzUur54VQyoVAbP57oU3Q8EWx
+  download_folder: data/whistle/saved
 
 trainer:
   experiment: ckconv

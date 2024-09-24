@@ -22,6 +22,8 @@ class DatasetConfig:
     load_data: bool = MISSING
     resample: bool = MISSING
     scale: bool = MISSING
+    drive_url: str = MISSING
+    download_folder: str = MISSING
 
 
 @dataclass

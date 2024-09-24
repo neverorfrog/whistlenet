@@ -11,7 +11,9 @@ class LightningTrainer(L.Trainer):  # type: ignore[misc]
     def __init__(self, config: TrainerConfig):
 
         self.config = config
-        self.ckpt_path = os.path.join(config.ckpt_path, config.experiment)
+        self.checkpoint_path = os.path.join(
+            config.ckpt_path, config.experiment
+        )
 
         aim_logger = AimLogger(
             experiment=config.experiment,
@@ -22,7 +24,7 @@ class LightningTrainer(L.Trainer):  # type: ignore[misc]
 
         self._checkpoint_callback = ModelCheckpoint(
             monitor="val_loss",
-            dirpath=self.ckpt_path,
+            dirpath=self.checkpoint_path,
             save_top_k=1,
             mode="min",
             verbose=True,
