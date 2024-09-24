@@ -11,6 +11,7 @@ class LightningTrainer(L.Trainer):  # type: ignore[misc]
     def __init__(self, config: TrainerConfig):
 
         self.config = config
+        self.ckpt_path = os.path.join(config.ckpt_path, config.experiment)
 
         aim_logger = AimLogger(
             experiment=config.experiment,
@@ -21,7 +22,7 @@ class LightningTrainer(L.Trainer):  # type: ignore[misc]
 
         self._checkpoint_callback = ModelCheckpoint(
             monitor="val_loss",
-            dirpath=config.ckpt_path,
+            dirpath=self.ckpt_path,
             save_top_k=1,
             mode="min",
             verbose=True,
@@ -43,7 +44,7 @@ class LightningTrainer(L.Trainer):  # type: ignore[misc]
     def fit(
         self, model: L.LightningModule, datamodule: L.LightningDataModule
     ) -> None:
-        checkpoint_path = f"{self.config.ckpt_path}/last.ckpt"
+        checkpoint_path = f"{self.ckpt_path}/last.ckpt"
 
         if self.config.resume_training and os.path.exists(checkpoint_path):
             ckpt_path = checkpoint_path
