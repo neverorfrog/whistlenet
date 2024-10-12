@@ -5,6 +5,8 @@ from config import WhistlenetConfig
 from whistlenet.ckconv.layers.ckconv import CKConv
 from whistlenet.core.layers import Linear1d
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 
 class CKBlock(torch.nn.Module):
     """
@@ -43,13 +45,15 @@ class CKBlock(torch.nn.Module):
         self.activation = nn.ELU()
 
         # Continuous convolution layer
-        self.conv = CKConv(in_channels, out_channels, config)
+        self.conv = CKConv(in_channels, out_channels, config).to(device)
 
         # Normalization layer
-        self.batch_norm = nn.BatchNorm1d(in_channels)
+        self.batch_norm = nn.BatchNorm1d(in_channels).to(device)
 
         # Dropout layer
-        self.dropout: torch.nn.Module = torch.nn.Dropout(p=config.dropout)
+        self.dropout: torch.nn.Module = torch.nn.Dropout(p=config.dropout).to(
+            device
+        )
 
         self.layers = nn.Sequential(
             self.batch_norm,
@@ -58,13 +62,13 @@ class CKBlock(torch.nn.Module):
             self.dropout,
             Linear1d(out_channels, out_channels),
             self.activation,
-        )
+        ).to(device)
 
         # Residual connection
         shortcut = []
         if in_channels != out_channels:
             shortcut.append(Linear1d(in_channels, out_channels))
-        self.shortcut = torch.nn.Sequential(*shortcut)
+        self.shortcut = torch.nn.Sequential(*shortcut).to(device)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
 
@@ -72,4 +76,4 @@ class CKBlock(torch.nn.Module):
         shortcut = self.shortcut(x)[:, :, : out.size(2)]
         out = self.activation(out + shortcut)
 
-        return out
+        return out.to(device)
