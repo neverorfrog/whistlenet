@@ -2,9 +2,9 @@ import onnx
 import onnxruntime
 import torch
 from core.model import Model
-from omegaconf import OmegaConf
 from onnx.defs import onnx_opset_version
-from utils.utils import to_numpy
+
+from whistlenet.core.utils import to_numpy
 
 
 class ONNXDynamo:

@@ -24,22 +24,22 @@ trainer:
 
 whistlenet:
   name: ckconv
-  dropout: 0.3
+  dropout: 0.2
   bias: True
   num_blocks: 4
-  hidden_channels: 16
+  hidden_channels: 32
   optimizer:
     type: RAdam
     lr: 0.00001
     weight_decay: 0.000001
   kernel:
     type: KernelNet
-    size: 55
+    size: 15
     no_layers: 3
     activation: LeakyReLU
     linear_type: Linear1d
     norm_type: boh
-    hidden_channels: 8
+    hidden_channels: 32
     dropout: 0.2
     omega_0: 750.0
     bias: True
@@ -49,12 +49,6 @@ whistlenet:
     causal: True
     alpha: 6.0
     beta: 1.0
-  mask:
-    type: gaussian
-    init_value: 0.075
-    threshold: 0.1
-    dynamic_cropping: True
-    learn_mean: False
 
 baseline:
   name: naodevils

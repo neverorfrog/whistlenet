@@ -4,11 +4,10 @@ import torch.nn as nn
 from config import WhistlenetConfig
 from whistlenet.ckconv.layers.ckblock import CKBlock
 from whistlenet.core import Model
-from whistlenet.core.lightning import LightningModel
-from whistlenet.core.utils import NUM_FREQS, FocalLoss
+from whistlenet.core.utils import NUM_FREQS
 
 
-class WhistleNet(LightningModel):
+class WhistleNet(Model):
     def __init__(
         self, in_channels: int, out_channels: int, config: WhistlenetConfig
     ):

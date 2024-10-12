@@ -3,8 +3,7 @@ import torch.nn as nn
 
 from config import WhistlenetConfig
 from whistlenet.ckconv.layers.ckconv import CKConv
-from whistlenet.ckconv.layers.flexconv import FlexConv
-from whistlenet.core.layers import LayerNorm, Linear1d
+from whistlenet.core.layers import Linear1d
 
 
 class CKBlock(torch.nn.Module):

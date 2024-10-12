@@ -4,7 +4,6 @@ import torch
 
 import whistlenet.ckconv.kernels as kernels
 from config.config import WhistlenetConfig
-from whistlenet.core.math.fftconv import fftconv1d
 from whistlenet.core.utils import getcallable
 
 

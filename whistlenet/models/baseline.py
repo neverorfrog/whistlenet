@@ -3,7 +3,6 @@ import torch.nn as nn
 
 from config.config import BaselineConfig
 from whistlenet.core.layers import MaxPool1dSame
-from whistlenet.core.utils import FocalLoss
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 from whistlenet.core import Model

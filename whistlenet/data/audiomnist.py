@@ -4,7 +4,7 @@ import numpy as np
 import torch
 
 from whistlenet.core.dataset import Dataset, TensorData
-from whistlenet.core.utils import Audio, project_root
+from whistlenet.core.utils import Audio
 
 
 class AudioMnistDataset(Dataset):

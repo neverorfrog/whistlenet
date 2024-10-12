@@ -2,14 +2,12 @@ import os
 from abc import ABC, abstractmethod
 from typing import List
 
+import lightning as L
 import torch
-from aim import Run
 from omegaconf import OmegaConf
-from torch import nn
 from torchmetrics import Metric
 from torchmetrics.classification import (
     BinaryAccuracy,
-    BinaryAUROC,
     BinaryF1Score,
     BinaryPrecision,
     BinaryRecall,
@@ -24,15 +22,19 @@ root = f"{projroot}"
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-class Model(nn.Module, ABC):
-    """The base class of models"""
+class Model(L.LightningModule, ABC):  # type: ignore[misc]
+    """
+    Args:
+        config: Configuration object for setting model parameters.
+    """
 
     def __init__(self, config: WhistlenetConfig) -> None:
-        super(Model, self).__init__()
+        super().__init__()
         self.name = config.name
         self.config = config
         self.training_time = 0.0
         self.init_metrics()
+        torch.set_float32_matmul_precision("medium")
 
     @abstractmethod
     def forward(self, X) -> torch.Tensor:
@@ -55,15 +57,14 @@ class Model(nn.Module, ABC):
         pass
 
     def inference(self, batch: torch.Tensor) -> torch.Tensor:
-        """This should maybe go into the subclass, for now it stays here"""
-        inputs: torch.Tensor = batch[:-1][0]  # X.shape = (m, d_in)
+        inputs: torch.Tensor = batch[:-1][0]  # X.shape=(m, d_in)
         shape = self.example_input[0].shape
         inputs = inputs.view(-1, *shape[1:]).float().to(device)
         probs = self(inputs)
         return probs
 
     def training_step(
-        self, batch: torch.Tensor, batch_idx: int, epoch: int
+        self, batch: torch.Tensor, batch_idx: int
     ) -> torch.Tensor:
         """
         A method to compute the loss on the given batch of data.
@@ -78,26 +79,87 @@ class Model(nn.Module, ABC):
         labels = batch[-1].view(*probs.shape).float().to(device)
         loss = self.loss_function(probs, labels)
         self.update_metrics(self.train_metrics, probs, labels)
+
+        self.log(
+            "train_loss", loss, on_step=False, on_epoch=True, prog_bar=True
+        )
+        self.log(
+            "train_acc",
+            self.train_accuracy,
+            on_step=False,
+            on_epoch=True,
+            prog_bar=True,
+        )
+        self.log(
+            "train_f1",
+            self.train_f1,
+            on_step=False,
+            on_epoch=True,
+            prog_bar=True,
+        )
+
         return loss
 
     def validation_step(
-        self, batch: torch.Tensor, batch_idx: int, epoch: int
+        self, batch: torch.Tensor, batch_idx: int
     ) -> torch.Tensor:
-        with torch.no_grad():
-            probs = self.inference(batch)
-            labels = batch[-1].view(*probs.shape).float().to(device)
-            loss = self.loss_function(probs, labels)
-            self.update_metrics(self.val_metrics, probs, labels)
+        probs = self.inference(batch)
+        labels = batch[-1].view(*probs.shape).float().to(device)
+        loss = self.loss_function(probs, labels)
+        self.update_metrics(self.val_metrics, probs, labels)
+
+        self.log("val_loss", loss, on_step=False, on_epoch=True, prog_bar=True)
+        self.log(
+            "val_acc",
+            self.val_accuracy,
+            on_step=False,
+            on_epoch=True,
+            prog_bar=True,
+        )
+        self.log(
+            "val_f1", self.val_f1, on_step=False, on_epoch=True, prog_bar=True
+        )
+        self.log(
+            "val_precision",
+            self.val_precision,
+            on_step=False,
+            on_epoch=True,
+            prog_bar=True,
+        )
+
         return loss
 
-    def test_step(
-        self, batch: torch.Tensor, batch_idx: int, epoch: int
-    ) -> torch.Tensor:
-        with torch.no_grad():
-            probs = self.inference(batch)
-            labels = batch[-1].view(*probs.shape).float().to(device)
-            loss = self.loss_function(probs, labels)
-            self.update_metrics(self.test_metrics, probs, labels)
+    def test_step(self, batch: torch.Tensor, batch_idx: int) -> torch.Tensor:
+        probs = self.inference(batch)
+        labels = batch[-1].view(*probs.shape).float().to(device)
+        loss = self.loss_function(probs, labels)
+        self.update_metrics(self.test_metrics, probs, labels)
+
+        self.log(
+            "test_loss", loss, on_step=False, on_epoch=True, prog_bar=True
+        )
+        self.log(
+            "test_acc",
+            self.test_accuracy,
+            on_step=False,
+            on_epoch=True,
+            prog_bar=True,
+        )
+        self.log(
+            "test_f1",
+            self.test_f1,
+            on_step=False,
+            on_epoch=True,
+            prog_bar=True,
+        )
+        self.log(
+            "test_precision",
+            self.test_precision,
+            on_step=False,
+            on_epoch=True,
+            prog_bar=True,
+        )
+
         return loss
 
     def configure_optimizers(self) -> torch.optim.Optimizer:

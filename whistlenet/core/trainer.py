@@ -3,12 +3,10 @@ import time
 import numpy as np
 import torch
 from aim import Run
-from aim.pytorch import track_gradients_dists, track_params_dists
 from tqdm import tqdm
 
 from config import TrainerConfig
 from whistlenet.core import Dataset, Model
-from whistlenet.core.utils import getcallable
 
 
 class Trainer:

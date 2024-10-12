@@ -1,5 +1,4 @@
 import torch
-from torch.nn.utils.parametrizations import weight_norm
 
 import whistlenet.core.layers as layers
 from config import KernelConfig

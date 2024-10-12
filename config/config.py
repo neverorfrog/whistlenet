@@ -64,15 +64,6 @@ class KernelConfig:
 
 
 @dataclass
-class MaskConfig:
-    type: str = MISSING
-    init_value: float = MISSING
-    threshold: float = MISSING
-    dynamic_cropping: bool = MISSING
-    learn_mean: bool = MISSING
-
-
-@dataclass
 class WhistlenetConfig:
     name: str = MISSING
     bias: bool = MISSING
@@ -81,7 +72,6 @@ class WhistlenetConfig:
     hidden_channels: int = MISSING
     kernel: KernelConfig = MISSING
     optimizer: OptimizerConfig = MISSING
-    mask: MaskConfig = MISSING
 
 
 @dataclass
