@@ -60,13 +60,13 @@ Continuous kernel convolutions adapt to varying input lengths and resolutions, o
 
     input
     | ------------------|
-    BatchNorm       |
-    CKConv           |
-    GELU               |
-    DropOut           |
-    Linear               |
-    GELU               |
-    + <---------------|
+    BatchNorm           |
+    CKConv              |
+    GELU                |
+    DropOut             |
+    Linear              |
+    GELU                |
+    + <-----------------|
     |
     output
 
