@@ -1,4 +1,4 @@
-from .kernels import KernelNet
-from .layers import CKBlock, CKConv
+from whistlenet.ckconv.kernels import KernelNet
+from whistlenet.ckconv.layers import CKBlock, CKConv
 
 __all__ = ["CKBlock", "CKConv", "KernelNet"]

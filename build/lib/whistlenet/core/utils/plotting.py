@@ -37,25 +37,3 @@ def plot(X: torch.Tensor, y: torch.Tensor, classes: Enum) -> None:
 
     plt.legend()
     plt.show()
-
-
-def plot_fitted_kernel(fig, output, f, loss, config):
-    ax = fig.add_subplot(111)
-    x_values = np.linspace(config.min, 0, f.shape[-1])
-    ax.plot(x_values, f, label="function")
-    ax.plot(x_values, output, label="fitted kernel")
-    ax.set_xticks([])
-    ax.text(
-        0.99,
-        0.013,
-        "Loss: {:.3e}".format(loss.item()),
-        verticalalignment="bottom",
-        horizontalalignment="right",
-        transform=ax.transAxes,
-        color="Black",
-        fontsize=12,
-        weight="roman",
-        family="monospace",
-        bbox={"facecolor": "white", "alpha": 0.9, "pad": 4},
-    )
-    ax.legend(loc=1)

@@ -3,21 +3,18 @@ import os
 import numpy as np
 import torch
 
-from config.config import DatasetConfig
 from whistlenet.core.dataset import Dataset, TensorData
-from whistlenet.core.utils import Audio, project_root
-
-dataroot = f"{project_root()}/data"
+from whistlenet.core.utils import Audio
 
 
 class AudioMnistDataset(Dataset):
 
-    def __init__(self, config: DatasetConfig):
-        self.config = config
-        savedpath = f"{dataroot}/audiomnist/saved/{config.name}"
-        rawdatapath = f"{dataroot}/audiomnist/raw"
-        if config.load_data is False:
-            self._construct_dataset(rawdatapath)
+    def __init__(
+        self, path: str = None, load: bool = False, params: dict = None
+    ):
+        self.params = params
+        if load is False:
+            self._construct_dataset(path)
 
             # train-test split
             (train_samples, train_labels, test_samples, test_labels) = (
@@ -35,14 +32,17 @@ class AudioMnistDataset(Dataset):
 
             # dataset creation and save
             super().__init__(
-                config=self.config,
+                tobeloaded=False,
+                params=self.params,
+                name="audiomnist",
                 train_data=train_dataset,
                 val_data=val_dataset,
                 test_data=test_dataset,
-                savedpath=savedpath,
             )
         else:
-            super().__init__(config=self.config, savedpath=savedpath)
+            super().__init__(
+                tobeloaded=True, params=self.params, name="audiomnist"
+            )
             self.classes = self.train_data.classes
 
     def _construct_dataset(self, path):
@@ -56,7 +56,9 @@ class AudioMnistDataset(Dataset):
                 if os.path.isdir(data_folder):
                     for filename in os.listdir(data_folder):
                         name, extension = os.path.splitext(filename)
-                        audio = Audio(name, datapath=data_folder)
+                        audio = Audio(
+                            name=name, datapath=data_folder, sr=10000
+                        )
                         label = name.split("_")[0]
                         labels.append(int(label))
                         data = (

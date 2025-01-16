@@ -27,14 +27,7 @@ class KernelNet(torch.nn.Module):
         """
         super().__init__()
 
-        try:
-            Activation: torch.nn.Module = getcallable(
-                torch.nn, config.activation
-            )
-        except AttributeError:
-            Activation: torch.nn.Module = getcallable(
-                layers, config.activation
-            )
+        Activation: torch.nn.Module = getcallable(torch.nn, config.activation)
         Linear: torch.nn.Module = getcallable(layers, config.linear_type)
 
         # The input of the network is a vector of relative positions and so input_dim = 1 for audio

@@ -24,17 +24,11 @@ def num_params(model: torch.nn.Module):
 
 
 def project_root() -> str:
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    max_iterations = 100  # Set a limit for the number of iterations
-    for _ in range(max_iterations):
-        if (
-            "requirements.txt" in os.listdir(current_dir)
-            or "setup.py" in os.listdir(current_dir)
-            or "pyproject.toml" in os.listdir(current_dir)
-        ):
-            return current_dir
-        current_dir = os.path.dirname(current_dir)
-    raise FileNotFoundError("beyond iteration limit, project root not found")
+    utils = os.path.abspath(os.path.dirname(__file__))
+    core = os.path.dirname(utils)
+    whistlenet = os.path.dirname(core)
+    project = os.path.dirname(whistlenet)
+    return project
 
 
 def device():

@@ -3,16 +3,16 @@ torch:
   seed: 123
 
 dataset:
-  name: overunder
+  name: default
   train_size: 0.7
   test_size: 0.3
   val_size: 0.1
   batch_size: 128
-  load_data: True
+  load_data: False
   resample: True
   scale: False
   drive_url: https://drive.google.com/drive/u/1/folders/1nLysAbeCzUur54VQyoVAbP57oU3Q8EWx
-  download_folder: data/whistle/saved
+  download_folder: data/audiomnist/raw
 
 trainer:
   experiment: ckconv

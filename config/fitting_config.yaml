@@ -19,5 +19,5 @@ omega_0: 50
 
 # training stuff
 iterations: 1500
-lr: 0.00001
+lr: 0.001
 optim: Adam

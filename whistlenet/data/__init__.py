@@ -1,1 +1,1 @@
-from .whistle_dataset import WhistleDataset
+from whistlenet.data.whistle_dataset import WhistleDataset

@@ -1,0 +1,60 @@
+torch:
+  device: cpu
+  seed: 123
+
+dataset:
+  name: overunder
+  train_size: 0.7
+  test_size: 0.3
+  val_size: 0.1
+  batch_size: 128
+  load_data: True
+  resample: True
+  scale: False
+  drive_url: https://drive.google.com/drive/u/1/folders/1nLysAbeCzUur54VQyoVAbP57oU3Q8EWx
+  download_folder: data/audiomnist/saved
+
+trainer:
+  experiment: ckconv
+  epochs: 20
+  patience: 5
+  ckpt_path: "ckpt"
+  resume_training: False
+  min_delta: 0.000001
+
+whistlenet:
+  name: ckconv
+  dropout: 0.2
+  bias: True
+  num_blocks: 4
+  hidden_channels: 32
+  optimizer:
+    type: RAdam
+    lr: 0.00001
+    weight_decay: 0.000001
+  kernel:
+    type: KernelNet
+    size: 15
+    no_layers: 3
+    activation: LeakyReLU
+    linear_type: Linear1d
+    norm_type: boh
+    hidden_channels: 32
+    dropout: 0.2
+    omega_0: 750.0
+    bias: True
+    conv_use_fft: True
+    init_spatial_value: 0.1
+    steerable: False
+    causal: True
+    alpha: 6.0
+    beta: 1.0
+
+baseline:
+  name: naodevils
+  dropout: 0.3
+  bias: True
+  optimizer:
+    type: RAdam
+    lr: 0.0001
+    weight_decay: 0.000001

@@ -1,2 +1,2 @@
-from .baseline import Baseline
-from .whistlenet import WhistleNet
+from whistlenet.models.baseline import Baseline
+from whistlenet.models.whistlenet import WhistleNet
