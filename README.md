@@ -86,8 +86,6 @@ The main consequence of this is that the kernel is arbitrarily large.
 The entire network is a sequence of 4 CKBlocks, with a final fully connected
 part. More specifically, the convolutional layers have a hidden size of 32. The convolutional kernels are structured as simple 3-layer MLPs with hidden size 16. I chose as kernel size 31, since an overly large kernel would overfit the training data, while a too small kernel would need a deeper network. Overall, the network size is of 59.1k trainable parameters.
 
-### Depthwise separable continuous convolution
-
 ## Problem: Audio Event Detection
 
 ### Dataset
