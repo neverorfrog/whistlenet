@@ -32,9 +32,10 @@ class WhistleNet(Model):
         fc_layers.append(nn.Dropout(config.dropout))
         fc_layers.append(nn.Linear(16, out_channels))
         fc_layers.append(nn.Sigmoid())
-        self.fc = torch.nn.Sequential(*fc_layers)
+        self.fc = torch.nn.Sequential(*fc_layers).to(self.device)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        x = x.to(self.device)
         out: torch.Tensor = self.backbone(x)
         out: torch.Tensor = self.pool(out.flatten(start_dim=1))
         out: torch.Tensor = self.fc(out)

@@ -16,3 +16,4 @@ src/tests/*/build
 models/*
 .aim
 ckpt
+wandb
