@@ -135,27 +135,25 @@ class Model(L.LightningModule, ABC):  # type: ignore[misc]
         loss = self.loss_function(probs, labels)
         self.update_metrics(self.test_metrics, probs, labels)
 
-        self.log(
-            "test_loss", loss, on_step=False, on_epoch=True, prog_bar=True
-        )
+        self.log("test_loss", loss, on_step=True, on_epoch=True, prog_bar=True)
         self.log(
             "test_acc",
             self.test_accuracy,
-            on_step=False,
+            on_step=True,
             on_epoch=True,
             prog_bar=True,
         )
         self.log(
             "test_f1",
             self.test_f1,
-            on_step=False,
+            on_step=True,
             on_epoch=True,
             prog_bar=True,
         )
         self.log(
             "test_precision",
             self.test_precision,
-            on_step=False,
+            on_step=True,
             on_epoch=True,
             prog_bar=True,
         )

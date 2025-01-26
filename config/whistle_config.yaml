@@ -12,15 +12,17 @@ dataset:
   resample: True
   scale: False
   drive_url: https://drive.google.com/drive/u/1/folders/1nLysAbeCzUur54VQyoVAbP57oU3Q8EWx
-  download_folder: data/audiomnist/saved
+  download_folder: data/whistle/saved
 
 trainer:
+  wandb_api_key: 41e4ba7425e35355cd4456863ed4cd9c73c084a3
+  wandb_project: whistlenet_test
   experiment: ckconv
   epochs: 20
   patience: 5
   ckpt_path: "ckpt"
   resume_training: False
-  min_delta: 0.000001
+  min_delta: 1e-6
 
 whistlenet:
   name: ckconv

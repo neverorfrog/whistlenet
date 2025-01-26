@@ -15,3 +15,4 @@ onnxruntime>=1.19.2
 pandas>=2.2.3
 gdown>=5.2.0
 onnxscript>=0.1.0.dev20250114
+wandb>=0.19.4

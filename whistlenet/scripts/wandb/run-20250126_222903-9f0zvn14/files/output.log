@@ -1,0 +1,29 @@
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+HPU available: False, using: 0 HPUs
+
+   | Name            | Type              | Params | Mode
+---------------------------------------------------------------
+0  | train_f1        | BinaryF1Score     | 0      | train
+1  | train_precision | BinaryPrecision   | 0      | train
+2  | train_recall    | BinaryRecall      | 0      | train
+3  | train_accuracy  | BinaryAccuracy    | 0      | train
+4  | val_f1          | BinaryF1Score     | 0      | train
+5  | val_precision   | BinaryPrecision   | 0      | train
+6  | val_recall      | BinaryRecall      | 0      | train
+7  | val_accuracy    | BinaryAccuracy    | 0      | train
+8  | test_f1         | BinaryF1Score     | 0      | train
+9  | test_precision  | BinaryPrecision   | 0      | train
+10 | test_recall     | BinaryRecall      | 0      | train
+11 | test_accuracy   | BinaryAccuracy    | 0      | train
+12 | backbone        | Sequential        | 111 K  | train
+13 | pool            | AdaptiveMaxPool1d | 0      | train
+14 | fc              | Sequential        | 545    | train
+---------------------------------------------------------------
+112 K     Trainable params
+0         Non-trainable params
+112 K     Total params
+0.448     Total estimated model params size (MB)
+85        Modules in train mode
+0         Modules in eval mode
+Epoch 0:   7%|▋         | 119/1718 [00:13<02:59,  8.92it/s, v_num=vn14]    

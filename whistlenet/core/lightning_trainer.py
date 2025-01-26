@@ -1,8 +1,10 @@
 import os
 
 import lightning as L
-from aim.pytorch_lightning import AimLogger
+import torch
+import wandb
 from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint
+from lightning.pytorch.loggers import WandbLogger
 
 from config import TrainerConfig
 
@@ -15,19 +17,14 @@ class LightningTrainer(L.Trainer):  # type: ignore[misc]
             config.ckpt_path, config.experiment
         )
 
-        aim_logger = AimLogger(
-            experiment=config.experiment,
-            train_metric_prefix="train_",
-            test_metric_prefix="test_",
-            val_metric_prefix="val_",
-        )
+        wandb.login(key=config.wandb_api_key)  # type: ignore
+        wandb.init(project=config.wandb_project, group=config.experiment)  # type: ignore
 
-        self._checkpoint_callback = ModelCheckpoint(
+        self._checkpoint_callback = SaveBestModel(
             monitor="val_loss",
             dirpath=self.checkpoint_path,
-            save_top_k=1,
             mode="min",
-            verbose=True,
+            filename=config.experiment,
         )
 
         early_stopping_callback = EarlyStopping(
@@ -40,7 +37,7 @@ class LightningTrainer(L.Trainer):  # type: ignore[misc]
         super().__init__(
             max_epochs=config.epochs,
             callbacks=[self._checkpoint_callback, early_stopping_callback],
-            logger=aim_logger,
+            logger=WandbLogger(),
         )
 
     def fit(
@@ -77,3 +74,34 @@ class LightningTrainer(L.Trainer):  # type: ignore[misc]
             dataloaders=datamodule.test_dataloader(),
             ckpt_path=best_ckpt_path,
         )
+
+
+class SaveBestModel(L.Callback):
+    def __init__(self, monitor: str, dirpath: str, mode: str, filename: str):
+        super().__init__()
+        self.monitor = monitor
+        self.dirpath = dirpath
+        self.mode = mode
+        self.filename = filename
+        self.best_score = None
+
+        if not os.path.exists(self.dirpath):
+            os.makedirs(self.dirpath)
+
+    def on_validation_end(self, trainer: L.Trainer, pl_module):
+        logs = trainer.callback_metrics
+        current_score = logs.get(self.monitor)
+
+        if current_score is None:
+            return
+
+        if self.best_score is None:
+            self.best_score = current_score
+
+        if (self.mode == "min" and current_score < self.best_score) or (
+            self.mode == "max" and current_score > self.best_score
+        ):
+            self.best_score = current_score
+            self.filepath = os.path.join(self.dirpath, self.filename)
+            torch.save(pl_module.state_dict(), self.filepath)
+            print(f"Model saved to {self.filepath}")

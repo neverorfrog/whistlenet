@@ -1,0 +1,8 @@
+{"time":"2025-01-26T22:25:33.257204047+01:00","level":"INFO","msg":"stream: starting","core version":"0.19.4","symlink path":"/home/neverorfrog/code/whistle/whistlenet/whistlenet/scripts/wandb/run-20250126_222532-f87w8h8h/logs/debug-core.log"}
+{"time":"2025-01-26T22:25:33.362018265+01:00","level":"INFO","msg":"created new stream","id":"f87w8h8h"}
+{"time":"2025-01-26T22:25:33.36204155+01:00","level":"INFO","msg":"stream: started","id":"f87w8h8h"}
+{"time":"2025-01-26T22:25:33.362128525+01:00","level":"INFO","msg":"handler: started","stream_id":"f87w8h8h"}
+{"time":"2025-01-26T22:25:33.36238921+01:00","level":"INFO","msg":"writer: Do: started","stream_id":"f87w8h8h"}
+{"time":"2025-01-26T22:25:33.362654054+01:00","level":"INFO","msg":"sender: started","stream_id":"f87w8h8h"}
+{"time":"2025-01-26T22:25:34.451088852+01:00","level":"INFO","msg":"Starting system monitor"}
+{"time":"2025-01-26T22:25:34.667077683+01:00","level":"INFO","msg":"Pausing system monitor"}

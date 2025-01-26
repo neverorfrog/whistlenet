@@ -28,6 +28,9 @@ class DatasetConfig:
 
 @dataclass
 class TrainerConfig:
+    wandb_api_key: str = MISSING
+    wandb_project: str = MISSING
+    group: str = MISSING
     experiment: str = MISSING
     epochs: int = MISSING
     patience: int = MISSING
