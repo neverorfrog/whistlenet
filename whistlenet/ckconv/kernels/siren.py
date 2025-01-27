@@ -6,6 +6,8 @@ import whistlenet.core.layers as layers
 from config import KernelConfig
 from whistlenet.core.utils import getcallable
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 
 class Siren(torch.nn.Module):
     def __init__(
@@ -60,7 +62,7 @@ class Siren(torch.nn.Module):
             torch.nn.Sequential(self.output_linear, Activation())
         )
 
-        self.kernel_net = torch.nn.Sequential(*self.layers)
+        self.kernel_net = torch.nn.Sequential(*self.layers).to(device)
         self.initialize(config.omega_0)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:

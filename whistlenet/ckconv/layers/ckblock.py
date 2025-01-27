@@ -67,7 +67,7 @@ class CKBlock(torch.nn.Module):
         # Residual connection
         shortcut = []
         if in_channels != out_channels:
-            shortcut.append(Linear1d(in_channels, out_channels))
+            shortcut.append(Linear1d(in_channels, out_channels).to(device))
         self.shortcut = torch.nn.Sequential(*shortcut).to(device)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
