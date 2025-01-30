@@ -6,6 +6,8 @@ from whistlenet.ckconv.layers.ckblock import CKBlock
 from whistlenet.core import Model
 from whistlenet.core.utils import NUM_FREQS
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 
 class WhistleNet(Model):
     def __init__(
@@ -20,9 +22,11 @@ class WhistleNet(Model):
         for j in range(num_blocks):
             block_in_channels = in_channels if j == 0 else hidden_channels
             block_out_channels = hidden_channels
-            ckblock = CKBlock(block_in_channels, block_out_channels, config)
+            ckblock = CKBlock(
+                block_in_channels, block_out_channels, config
+            ).to(device)
             ckblocks.append(ckblock)
-        self.backbone = torch.nn.Sequential(*ckblocks)
+        self.backbone = torch.nn.Sequential(*ckblocks).to(device)
 
         self.pool = nn.AdaptiveMaxPool1d(32)
 
@@ -35,7 +39,7 @@ class WhistleNet(Model):
         self.fc = torch.nn.Sequential(*fc_layers).to(self.device)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        x = x.to(self.device)
+        x = x.clone().detach().to(device).requires_grad_(True)
         out: torch.Tensor = self.backbone(x)
         out: torch.Tensor = self.pool(out.flatten(start_dim=1))
         out: torch.Tensor = self.fc(out)

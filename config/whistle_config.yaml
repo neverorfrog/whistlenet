@@ -3,7 +3,7 @@ torch:
   seed: 123
 
 dataset:
-  name: overunder
+  name: naodevils
   train_size: 0.7
   test_size: 0.3
   val_size: 0.1
@@ -11,7 +11,8 @@ dataset:
   load_data: True
   resample: True
   scale: False
-  drive_url: https://drive.google.com/drive/u/1/folders/1nLysAbeCzUur54VQyoVAbP57oU3Q8EWx
+  # drive_url: https://drive.google.com/drive/u/1/folders/1nLysAbeCzUur54VQyoVAbP57oU3Q8EWx
+  drive_url: https://drive.google.com/drive/u/1/folders/1chCqL1fNEw6_siDDfanCFerWOsHPkjEk
   download_folder: data/whistle/saved
 
 trainer:
