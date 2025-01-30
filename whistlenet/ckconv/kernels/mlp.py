@@ -70,6 +70,7 @@ class KernelNet(torch.nn.Module):
         self.initialize(Activation)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        x = x.to(device)
         return self.kernel_net(x)
 
     def initialize(
