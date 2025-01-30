@@ -55,6 +55,7 @@ whistlenet:
 baseline:
   name: naodevils
   dropout: 0.3
+  hidden_dropout: 0.3
   bias: True
   optimizer:
     type: RAdam

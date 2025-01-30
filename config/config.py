@@ -82,6 +82,7 @@ class BaselineConfig:
     name: str = MISSING
     bias: bool = MISSING
     dropout: float = MISSING
+    hidden_dropout: float = MISSING
     optimizer: OptimizerConfig = MISSING
 
 
