@@ -19,7 +19,7 @@ trainer:
   wandb_api_key: 41e4ba7425e35355cd4456863ed4cd9c73c084a3
   wandb_project: whistlenet_test
   experiment: ckconv
-  epochs: 20
+  epochs: 100
   patience: 5
   ckpt_path: "ckpt"
   resume_training: False
@@ -42,7 +42,7 @@ whistlenet:
     activation: LeakyReLU
     linear_type: Linear1d
     norm_type: boh
-    hidden_channels: 32
+    hidden_channels: 16
     dropout: 0.2
     omega_0: 750.0
     bias: True
