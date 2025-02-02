@@ -61,18 +61,9 @@ class LightningTrainer(L.Trainer):  # type: ignore[misc]
         self, model: L.LightningModule, datamodule: L.LightningDataModule
     ) -> None:
         """Test the model on the test set."""
-        best_ckpt_path = self._checkpoint_callback.filepath
-
-        if not best_ckpt_path:
-            raise ValueError(
-                "Best model path not found. \
-                Make sure the model was trained and saved."
-            )
-
         super().test(
             model=model,
             dataloaders=datamodule.test_dataloader(),
-            ckpt_path=best_ckpt_path,
         )
 
 
