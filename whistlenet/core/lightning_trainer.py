@@ -43,18 +43,10 @@ class LightningTrainer(L.Trainer):  # type: ignore[misc]
     def fit(
         self, model: L.LightningModule, datamodule: L.LightningDataModule
     ) -> None:
-        checkpoint_path = f"{self.ckpt_path}/last.ckpt"
-
-        if self.config.resume_training and os.path.exists(checkpoint_path):
-            ckpt_path = checkpoint_path
-        else:
-            ckpt_path = None
-
         super().fit(
             model=model,
             train_dataloaders=datamodule.train_dataloader(),
             val_dataloaders=datamodule.val_dataloader(),
-            ckpt_path=ckpt_path,
         )
 
     def test(
