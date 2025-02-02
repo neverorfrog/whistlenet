@@ -55,7 +55,6 @@ class KernelConfig:
     linear_type: str = MISSING
     hidden_channels: int = MISSING
     dropout: float = MISSING
-    norm_type: str = MISSING
     omega_0: float = MISSING
     bias: bool = MISSING
     conv_use_fft: bool = MISSING

@@ -41,7 +41,6 @@ whistlenet:
     no_layers: 3
     activation: LeakyReLU
     linear_type: Linear1d
-    norm_type: boh
     hidden_channels: 16
     dropout: 0.2
     omega_0: 750.0

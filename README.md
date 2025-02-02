@@ -3,6 +3,8 @@
 Project for Neural Networks course at Sapienza University of Rome. This project
 is about the experimentation of the contributions of [[1]](#1) and [[2]](#2). The main idea is to implement a convolutional neural network architecture that uses a fully connected network to parametrize the size of the convolutional kernel itself, making the convolution in fact continuous. The main task to be solved is the detection of a whistle sound, needed for RoboCup competition.
 
+Use this [![colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/neverorfrog/whistlenet/blob/main/whistlenet/scripts/main_whistle_colab.ipynb) to run the code
+
 ## What is the problem with discrete convolution?
 
 Ingredients
@@ -15,7 +17,7 @@ Ingredients
 Definition of convolution (with $N_{in}=1$)
 - $(x * \psi)(t) = \sum\limits_{\tau=-\frac{N_k}{2}}^{\frac{N_k}{2}} x(\tau)\cdot\psi(t-\tau)$
 
-<p align="center">
+<p align="left">
   <img src="docs/assets/discrete_conv.png" alt="Alt text" width="300"/>
 </p>
 

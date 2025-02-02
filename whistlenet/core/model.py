@@ -3,8 +3,11 @@ from abc import ABC, abstractmethod
 from typing import List
 
 import lightning as L
+import matplotlib.pyplot as plt
+import seaborn as sns
 import torch
 from omegaconf import OmegaConf
+from sklearn.metrics import confusion_matrix
 from torchmetrics import Metric
 from torchmetrics.classification import (
     BinaryAccuracy,
@@ -177,6 +180,8 @@ class Model(L.LightningModule, ABC):  # type: ignore[misc]
         predictions = torch.where(
             probs >= 0.5, torch.tensor(1), torch.tensor(0)
         )
+        self.y_hat = predictions
+        self.y = labels
         [metric(predictions, labels) for metric in metrics]
 
     def init_metrics(self) -> None:
@@ -215,6 +220,19 @@ class Model(L.LightningModule, ABC):  # type: ignore[misc]
             self.test_accuracy,
         ]
         self.test_metrics_names = ["f1", "precision", "recall", "accuracy"]
+
+    def on_test_epoch_end(self) -> None:
+        y_hat = torch.cat(self.y_hat)
+        y = torch.cat(self.y)
+
+        cm = confusion_matrix(y.cpu(), y_hat.cpu())
+
+        plt.figure(figsize=(10, 7))
+        sns.heatmap(cm, annot=True, fmt="d", cmap="Blues")
+        plt.xlabel("Predicted")
+        plt.ylabel("Actual")
+        plt.title("Confusion Matrix - Test Set")
+        plt.show()
 
     def save(self) -> None:
         """
