@@ -19,7 +19,7 @@ trainer:
   wandb_api_key: 41e4ba7425e35355cd4456863ed4cd9c73c084a3
   wandb_project: whistlenet_test
   experiment: ckconv
-  epochs: 100
+  epochs: 30
   patience: 5
   ckpt_path: "ckpt"
   resume_training: False
