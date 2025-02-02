@@ -61,7 +61,7 @@ class LightningTrainer(L.Trainer):  # type: ignore[misc]
         self, model: L.LightningModule, datamodule: L.LightningDataModule
     ) -> None:
         """Test the model on the test set."""
-        best_ckpt_path = self._checkpoint_callback.best_model_path
+        best_ckpt_path = self._checkpoint_callback.dirpath
 
         if not best_ckpt_path:
             raise ValueError(
