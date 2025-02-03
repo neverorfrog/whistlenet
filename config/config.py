@@ -57,12 +57,6 @@ class KernelConfig:
     dropout: float = MISSING
     omega_0: float = MISSING
     bias: bool = MISSING
-    conv_use_fft: bool = MISSING
-    init_spatial_value: float = MISSING
-    steerable: bool = MISSING
-    causal: bool = MISSING
-    alpha: float = MISSING
-    beta: float = MISSING
 
 
 @dataclass

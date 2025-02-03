@@ -7,7 +7,7 @@ dataset:
   train_size: 0.7
   test_size: 0.3
   val_size: 0.1
-  batch_size: 128
+  batch_size: 64
   load_data: True
   resample: True
   scale: False
@@ -19,7 +19,7 @@ trainer:
   wandb_api_key: 41e4ba7425e35355cd4456863ed4cd9c73c084a3
   wandb_project: whistlenet_test
   experiment: ckconv
-  epochs: 30
+  epochs: 15
   patience: 5
   ckpt_path: "ckpt"
   resume_training: False
@@ -34,23 +34,17 @@ whistlenet:
   optimizer:
     type: RAdam
     lr: 0.00001
-    weight_decay: 0.000001
+    weight_decay: 0.00000001
   kernel:
     type: KernelNet
-    size: 15
+    size: 31
     no_layers: 3
-    activation: LeakyReLU
+    activation: Sine
     linear_type: Linear1d
     hidden_channels: 16
     dropout: 0.2
     omega_0: 750.0
     bias: True
-    conv_use_fft: True
-    init_spatial_value: 0.1
-    steerable: False
-    causal: True
-    alpha: 6.0
-    beta: 1.0
 
 baseline:
   name: naodevils
