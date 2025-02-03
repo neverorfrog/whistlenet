@@ -64,7 +64,7 @@ def hpo(config: WhistlenetConfig, data: L.LightningDataModule) -> None:
         print(f"Kernel Size: {config.kernel.size}")
         print(f"Kernel Activation: {config.kernel.activation}")
 
-        trainer = L.Trainer(max_epochs=3)
+        trainer = L.Trainer(max_epochs=2)
 
         trainer.fit(model, data)
         optimized_value: float = trainer.logged_metrics["val/loss"]
