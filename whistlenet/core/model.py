@@ -228,17 +228,18 @@ class Model(L.LightningModule, ABC):  # type: ignore[misc]
         self.test_metrics_names = ["f1", "precision", "recall", "accuracy"]
 
     def on_test_epoch_end(self) -> None:
-        y_hat = torch.cat(self.test_y_hat)
-        y = torch.cat(self.test_y)
+        pass
+        # y_hat = torch.cat(self.test_y_hat)
+        # y = torch.cat(self.test_y)
 
-        cm = confusion_matrix(y.cpu(), y_hat.cpu())
+        # cm = confusion_matrix(y.cpu(), y_hat.cpu())
 
-        plt.figure(figsize=(10, 7))
-        sns.heatmap(cm, annot=True, fmt="d", cmap="Blues")
-        plt.xlabel("Predicted")
-        plt.ylabel("Actual")
-        plt.title("Confusion Matrix - Test Set")
-        plt.show()
+        # plt.figure(figsize=(10, 7))
+        # sns.heatmap(cm, annot=True, fmt="d", cmap="Blues")
+        # plt.xlabel("Predicted")
+        # plt.ylabel("Actual")
+        # plt.title("Confusion Matrix - Test Set")
+        # plt.show()
 
     def save(self) -> None:
         """
