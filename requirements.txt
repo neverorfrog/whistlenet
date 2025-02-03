@@ -17,3 +17,4 @@ gdown>=5.2.0
 onnxscript>=0.1.0.dev20250114
 wandb>=0.19.4
 seaborn>=0.13.2
+optuna>=4.2.0
