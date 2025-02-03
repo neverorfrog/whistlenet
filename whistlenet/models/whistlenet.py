@@ -28,10 +28,10 @@ class WhistleNet(Model):
             ckblocks.append(ckblock)
         self.backbone = torch.nn.Sequential(*ckblocks).to(device)
 
-        self.pool = nn.AdaptiveMaxPool1d(64)
+        self.pool = nn.AdaptiveMaxPool1d(32)
 
         fc_layers = []
-        fc_layers.append(nn.Linear(64, 16))
+        fc_layers.append(nn.Linear(32, 16))
         fc_layers.append(nn.Tanh())
         fc_layers.append(nn.Dropout(config.dropout))
         fc_layers.append(nn.Linear(16, out_channels))
