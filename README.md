@@ -5,6 +5,11 @@ is about the experimentation of the contributions of [[1]](#1) and [[2]](#2). Th
 
 Use this [![colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/neverorfrog/whistlenet/blob/main/whistlenet/scripts/main_whistle_colab.ipynb) to run the code
 
+The code was executed with few epochs on hpo due to colab limitations
+
+[![WandB Report](https://img.shields.io/badge/W%26B-Report-yellow)](https://wandb.ai/neverorfrog-sapienza/whistlenet_test/reports/Untitled-Report--VmlldzoxMTE5MDg4MQ)
+
+
 ## What is the problem with discrete convolution?
 
 Ingredients
