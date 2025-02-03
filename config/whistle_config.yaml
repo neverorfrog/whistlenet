@@ -11,8 +11,7 @@ dataset:
   load_data: True
   resample: True
   scale: False
-  # drive_url: https://drive.google.com/drive/u/1/folders/1nLysAbeCzUur54VQyoVAbP57oU3Q8EWx
-  drive_url: https://drive.google.com/drive/u/1/folders/1chCqL1fNEw6_siDDfanCFerWOsHPkjEk
+  drive_url: https://drive.google.com/drive/folders/1BQGQnBbLM2z7baoqFOR4mjkCQiaLjqj9?usp=sharing
   download_folder: data/whistle/saved
 
 trainer:
