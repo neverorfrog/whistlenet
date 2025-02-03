@@ -13,7 +13,7 @@ projroot = project_root()
 root = f"{projroot}/data"
 
 
-class Dataset(ABC, L.LightningDataModule):
+class Dataset(L.LightningDataModule):
     """The abstract class for handling datasets"""
 
     def __init__(
@@ -24,6 +24,7 @@ class Dataset(ABC, L.LightningDataModule):
         val_data=None,
         savedpath=None,
     ):
+        super().__init__()
         self.config = config
         self.train_data = train_data
         self.val_data = val_data
