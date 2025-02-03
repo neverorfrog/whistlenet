@@ -64,10 +64,10 @@ def hpo(config: WhistlenetConfig, data: L.LightningDataModule) -> None:
         print(f"Kernel Size: {config.kernel.size}")
         print(f"Kernel Activation: {config.kernel.activation}")
 
-        trainer = L.Trainer(max_epochs=2)
+        trainer = L.Trainer(max_epochs=1)
 
         trainer.fit(model, data)
-        optimized_value: float = trainer.logged_metrics["val/loss"]
+        optimized_value: float = trainer.logged_metrics["val_loss"]
         return optimized_value
 
     model = WhistleNet(1, 1, config)
@@ -82,7 +82,7 @@ def hpo(config: WhistlenetConfig, data: L.LightningDataModule) -> None:
 
     study.optimize(
         lambda trial: objective(trial, model, data),
-        n_trials=5,
+        n_trials=4,
         callbacks=[optuna_callback],
     )
 
