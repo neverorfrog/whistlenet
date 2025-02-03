@@ -46,13 +46,13 @@ def hpo(config: WhistlenetConfig, data: L.LightningDataModule) -> None:
         # Hyperparameters to optimize
         config.optimizer.lr = trial.suggest_float("lr", 1e-4, 1e-3, log=True)
         config.hidden_channels = trial.suggest_categorical(
-            "hidden_channels", choices=[8, 12, 16, 24, 32]
+            "hidden_channels", choices=[16, 24, 32]
         )
         config.kernel.hidden_channels = trial.suggest_categorical(
-            "kernel_hidden_channels", choices=[8, 12, 16, 24, 32]
+            "kernel_hidden_channels", choices=[16, 24, 32]
         )
         config.kernel.size = trial.suggest_categorical(
-            "kernel_size", choices=[9, 15, 21, 27, 33, 51]
+            "kernel_size", choices=[15, 27, 35, 51]
         )
         config.kernel.activation = trial.suggest_categorical(
             "activation", choices=["Sine", "LeakyReLU", "ReLU"]
@@ -64,7 +64,7 @@ def hpo(config: WhistlenetConfig, data: L.LightningDataModule) -> None:
         print(f"Kernel Size: {config.kernel.size}")
         print(f"Kernel Activation: {config.kernel.activation}")
 
-        trainer = L.Trainer(max_epochs=5)
+        trainer = L.Trainer(max_epochs=3)
 
         trainer.fit(model, data)
         optimized_value: float = trainer.logged_metrics["val/loss"]
@@ -82,7 +82,7 @@ def hpo(config: WhistlenetConfig, data: L.LightningDataModule) -> None:
 
     study.optimize(
         lambda trial: objective(trial, model, data),
-        n_trials=4,
+        n_trials=5,
         callbacks=[optuna_callback],
     )
 
