@@ -36,6 +36,8 @@ class Model(L.LightningModule, ABC):  # type: ignore[misc]
         self.name = config.name
         self.config = config
         self.training_time = 0.0
+        self.test_y: List[torch.Tensor] = []
+        self.test_y_hat: List[torch.Tensor] = []
         self.init_metrics()
         torch.set_float32_matmul_precision("medium")
 
@@ -138,6 +140,12 @@ class Model(L.LightningModule, ABC):  # type: ignore[misc]
         loss = self.loss_function(probs, labels)
         self.update_metrics(self.test_metrics, probs, labels)
 
+        predictions = torch.where(
+            probs >= 0.5, torch.tensor(1), torch.tensor(0)
+        )
+        self.test_y_hat.append(predictions)
+        self.test_y.append(labels)
+
         self.log("test_loss", loss, on_step=True, on_epoch=True, prog_bar=True)
         self.log(
             "test_acc",
@@ -180,8 +188,6 @@ class Model(L.LightningModule, ABC):  # type: ignore[misc]
         predictions = torch.where(
             probs >= 0.5, torch.tensor(1), torch.tensor(0)
         )
-        self.y_hat = predictions
-        self.y = labels
         [metric(predictions, labels) for metric in metrics]
 
     def init_metrics(self) -> None:
@@ -222,8 +228,8 @@ class Model(L.LightningModule, ABC):  # type: ignore[misc]
         self.test_metrics_names = ["f1", "precision", "recall", "accuracy"]
 
     def on_test_epoch_end(self) -> None:
-        y_hat = torch.cat(self.y_hat)
-        y = torch.cat(self.y)
+        y_hat = torch.cat(self.test_y_hat)
+        y = torch.cat(self.test_y)
 
         cm = confusion_matrix(y.cpu(), y_hat.cpu())
 
